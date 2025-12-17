@@ -1,3 +1,32 @@
 {
-  "import": []
+  "import": [],
+  "link": {
+    "js": {
+      "exports": [
+        "md_parse",
+        "md_render_to_string",
+        "md_parse_incremental",
+        "md_free",
+        "md_parse_and_render"
+      ]
+    },
+    "wasm-gc": {
+      "exports": [
+        "md_parse",
+        "md_render_to_string",
+        "md_parse_incremental",
+        "md_free",
+        "md_parse_and_render"
+      ]
+    },
+    "wasm": {
+      "exports": [
+        "md_parse",
+        "md_render_to_string",
+        "md_parse_incremental",
+        "md_free",
+        "md_parse_and_render"
+      ]
+    }
+  }
 }

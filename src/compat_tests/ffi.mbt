@@ -1,0 +1,13 @@
+///| FFI bindings for remark compatibility testing
+///| This file is JS-target only
+
+///| Call remark to process markdown (sync via require)
+///| Returns stringified result from remark
+///|
+///| @target js
+pub extern "js" fn remark_stringify(input : String) -> String =
+  #| (input) => {
+  #|   const { remark } = require('remark');
+  #|   const result = remark().processSync(input);
+  #|   return String(result);
+  #| }
