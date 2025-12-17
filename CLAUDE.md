@@ -33,6 +33,40 @@ moon bench           # ベンチマーク実行
 moon fmt             # コードフォーマット
 ```
 
+## 開発ワークフロー
+
+### テスト・ベンチマーク・イテレーション
+
+機能修正時は以下のサイクルで進める：
+
+```bash
+# 1. メインテストで基本動作確認
+moon test --target js src
+
+# 2. CommonMark互換テストで進捗確認
+moon test --target js src/cmark_tests
+
+# 3. 特定カテゴリのテスト（例: code spans）
+moon test --target js src/cmark_tests/code_spans_test.mbt
+
+# 4. ベンチマーク実行・ベースラインと比較
+moon bench
+# .bench-baseline と目視比較
+
+# 5. パフォーマンス問題があれば最適化後に再テスト
+moon test --target js src  # 最適化で壊れていないか確認
+moon bench                  # 改善を確認
+
+# 6. ベースライン更新（最適化完了時）
+just bench-accept
+```
+
+### パフォーマンス最適化のポイント
+
+- `count_char` より `peek_at(n)` を使う（O(n) → O(1)）
+- 配列より ビットマスク（アロケーション回避）
+- ループ内でのString生成を避ける
+
 ## 主要な型
 
 ### Block (ブロック要素)
