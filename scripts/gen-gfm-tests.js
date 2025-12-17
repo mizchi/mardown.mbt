@@ -33,7 +33,7 @@ const GFM_EXTENSION_SECTIONS = [
 const SKIP_TESTS = {
   'Tables (extension)': {
     reason: 'Table edge case',
-    examples: [199, 200, 201, 202, 203, 204],  // 198, 205 pass
+    examples: [199, 200, 202, 203, 204],  // 198, 201, 205 pass
   },
   'Strikethrough (extension)': {
     reason: 'Strikethrough edge case',

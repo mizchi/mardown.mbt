@@ -232,7 +232,7 @@ fn serialize_block(block : Block, buf : StringBuilder) -> Unit {
       buf.write_char('|')
       for cell in header {
         buf.write_char(' ')
-        serialize_inlines(cell.children, buf)
+        serialize_table_cell_inlines(cell.children, buf)
         buf.write_string(" |")
       }
       buf.write_char('\n')
@@ -252,7 +252,7 @@ fn serialize_block(block : Block, buf : StringBuilder) -> Unit {
         buf.write_char('|')
         for cell in row {
           buf.write_char(' ')
-          serialize_inlines(cell.children, buf)
+          serialize_table_cell_inlines(cell.children, buf)
           buf.write_string(" |")
         }
         buf.write_char('\n')
@@ -272,6 +272,31 @@ fn serialize_block(block : Block, buf : StringBuilder) -> Unit {
 fn serialize_inlines(inlines : Array[Inline], buf : StringBuilder) -> Unit {
   for inline in inlines {
     serialize_inline(inline, buf)
+  }
+}
+
+///| Serialize table cell inline content (escapes pipes)
+fn serialize_table_cell_inlines(inlines : Array[Inline], buf : StringBuilder) -> Unit {
+  for inline in inlines {
+    serialize_table_cell_inline(inline, buf)
+  }
+}
+
+///| Serialize a single inline element for table cells (escapes pipes in text)
+fn serialize_table_cell_inline(inline : Inline, buf : StringBuilder) -> Unit {
+  match inline {
+    Inline::Text(content~, ..) => {
+      // Escape pipe characters in table cells
+      for c in content {
+        if c == '|' {
+          buf.write_string("\\|")
+        } else {
+          buf.write_char(c)
+        }
+      }
+    }
+    // For other inline types, delegate to regular serialization
+    _ => serialize_inline(inline, buf)
   }
 }
 

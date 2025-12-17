@@ -1188,6 +1188,15 @@ fn BlockParser::try_parse_table(self : BlockParser, start : Int) -> Block? {
     return None
   }
 
+  // Count header columns - must match separator columns for valid table
+  let header_cells = split_table_cells(header_line)
+  let header_col_count = header_cells.filter(fn(c) { not(c.trim_space().is_empty()) }).length()
+  if header_col_count != alignments.length() {
+    // Column count mismatch - not a valid table
+    self.scanner.restore(saved)
+    return None
+  }
+
   if char_is(self.scanner.peek(), '\n') {
     self.scanner.advance(1)
   }
@@ -1198,8 +1207,11 @@ fn BlockParser::try_parse_table(self : BlockParser, start : Int) -> Block? {
   // Parse data rows
   let rows : Array[Array[TableCell]] = []
   while not(self.scanner.is_eof()) && not(self.scanner.is_blank_line()) {
+    let row_start = self.scanner.pos
     let row_line = self.scanner.read_line()
     if not(row_line.contains("|")) {
+      // Not a table row, restore position and stop
+      self.scanner.restore(row_start)
       break
     }
     rows.push(parse_table_row(row_line, alignments.length()))
