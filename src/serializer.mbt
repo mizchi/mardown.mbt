@@ -197,26 +197,7 @@ fn serialize_block(block : Block, buf : StringBuilder) -> Unit {
 
     Block::BulletList(items~, ..) => {
       // GFM style: always use *, no marker_offset
-      for item in items {
-        buf.write_string("* ")
-
-        // Task list checkbox
-        match item.checked {
-          Some(true) => buf.write_string("[x] ")
-          Some(false) => buf.write_string("[ ] ")
-          None => ()
-        }
-
-        // Serialize item content
-        for child in item.children {
-          match child {
-            Block::Paragraph(children=para_children, ..) =>
-              serialize_inlines(para_children, buf)
-            _ => serialize_block(child, buf)
-          }
-        }
-        buf.write_char('\n')
-      }
+      serialize_bullet_list_items(items, buf, 0)
     }
 
     Block::OrderedList(start~, items~, ..) => {
@@ -415,4 +396,52 @@ pub fn serialize_definitions(defs : Array[LinkDefinition]) -> String {
     buf.write_char('\n')
   }
   buf.to_string()
+}
+
+///| Serialize bullet list items with indentation
+fn serialize_bullet_list_items(
+  items : Array[ListItem],
+  buf : StringBuilder,
+  indent : Int
+) -> Unit {
+  for item in items {
+    // Write indentation
+    write_chars(buf, ' ', indent)
+    buf.write_string("* ")
+
+    // Task list checkbox
+    match item.checked {
+      Some(true) => buf.write_string("[x] ")
+      Some(false) => buf.write_string("[ ] ")
+      None => ()
+    }
+
+    // Serialize item content
+    let mut first_block = true
+    for child in item.children {
+      match child {
+        Block::Paragraph(children=para_children, ..) => {
+          serialize_inlines(para_children, buf)
+          buf.write_char('\n')
+          first_block = false
+        }
+        Block::BulletList(items=nested_items, ..) => {
+          // Nested list - serialize with increased indentation
+          if first_block {
+            buf.write_char('\n')
+          }
+          serialize_bullet_list_items(nested_items, buf, indent + 2)
+        }
+        _ => {
+          serialize_block(child, buf)
+          first_block = false
+        }
+      }
+    }
+
+    // If no content was written, add newline
+    if first_block {
+      buf.write_char('\n')
+    }
+  }
 }

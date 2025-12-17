@@ -705,7 +705,7 @@ fn BlockParser::parse_list_item(
   marker_offset : Int,
   content_offset : Int
 ) -> ListItem {
-  // For now, parse just the first line as paragraph
+  // Parse first line content
   let content_buf = StringBuilder::new()
   let line = self.scanner.read_line()
   content_buf.write_string(line)
@@ -719,6 +719,145 @@ fn BlockParser::parse_list_item(
   let children : Array[Block] = []
 
   // Check for task list checkbox: [ ], [x], or [X]
+  let (checked, actual_content) = parse_task_checkbox(content)
+
+  if not(actual_content.is_empty()) {
+    let inline_content = parse_inlines(actual_content)
+    children.push(Block::Paragraph(
+      children=inline_content,
+      span=Span::new(start, self.scanner.pos),
+      leading_trivia=Trivia::empty(),
+      trailing_trivia=Trivia::empty(),
+    ))
+  }
+
+  // Check for nested content (indented continuation)
+  // Nested list requires at least 2 spaces of indentation
+  let min_indent = marker_offset + 1 + content_offset  // marker position + marker char + spaces after
+
+  while not(self.scanner.is_eof()) && not(self.scanner.is_blank_line()) {
+    let saved = self.scanner.pos
+    let indent = self.scanner.skip_spaces()
+
+    // Check if indented enough to be continuation
+    if indent < min_indent {
+      self.scanner.restore(saved)
+      break
+    }
+
+    // Check if this is a nested list
+    match self.scanner.peek() {
+      Some('-') | Some('*') | Some('+') => {
+        // Nested bullet list
+        let nested_marker = match self.scanner.peek() {
+          Some('-') => BulletMarker::Dash
+          Some('*') => BulletMarker::Asterisk
+          Some('+') => BulletMarker::Plus
+          _ => panic() // unreachable
+        }
+        self.scanner.restore(saved)
+        match self.parse_nested_bullet_list(nested_marker, min_indent) {
+          Some(nested_list) => children.push(nested_list)
+          None => break
+        }
+      }
+      _ => {
+        // Not a nested list, restore and break
+        self.scanner.restore(saved)
+        break
+      }
+    }
+  }
+
+  {
+    children,
+    checked,
+    marker_offset,
+    content_offset,
+    span: Span::new(start, self.scanner.pos),
+  }
+}
+
+///| Parse nested bullet list (indented list)
+fn BlockParser::parse_nested_bullet_list(
+  self : BlockParser,
+  marker : BulletMarker,
+  min_indent : Int
+) -> Block? {
+  let items : Array[ListItem] = []
+  let mut tight = true
+
+  while not(self.scanner.is_eof()) {
+    let item_start = self.scanner.pos
+    let marker_offset = self.scanner.skip_spaces()
+
+    // Must have at least min_indent spaces
+    if marker_offset < min_indent {
+      self.scanner.restore(item_start)
+      break
+    }
+
+    // Check marker matches
+    let current_marker = match self.scanner.peek() {
+      Some('-') => Some(BulletMarker::Dash)
+      Some('*') => Some(BulletMarker::Asterisk)
+      Some('+') => Some(BulletMarker::Plus)
+      _ => None
+    }
+
+    if current_marker != Some(marker) {
+      self.scanner.restore(item_start)
+      break
+    }
+
+    self.scanner.advance(1)  // Skip marker
+    let content_offset = self.scanner.skip_spaces()
+    let actual_offset = if content_offset == 0 { 1 } else { content_offset }
+
+    // Parse item content (non-recursive for now to avoid deep nesting issues)
+    let item = self.parse_nested_list_item(item_start, marker_offset, actual_offset)
+    items.push(item)
+
+    // Check for blank lines
+    if not(self.scanner.is_eof()) && self.scanner.is_blank_line() {
+      tight = false
+      while not(self.scanner.is_eof()) && self.scanner.is_blank_line() {
+        self.scanner.skip_line()
+      }
+    }
+  }
+
+  if items.is_empty() {
+    return None
+  }
+
+  Some(Block::BulletList(
+    marker~,
+    tight~,
+    items~,
+    span=Span::new(items[0].span.from, self.scanner.pos),
+    leading_trivia=Trivia::empty(),
+    trailing_trivia=Trivia::empty(),
+  ))
+}
+
+///| Parse nested list item (simplified, no recursion)
+fn BlockParser::parse_nested_list_item(
+  self : BlockParser,
+  start : Int,
+  marker_offset : Int,
+  content_offset : Int
+) -> ListItem {
+  let content_buf = StringBuilder::new()
+  let line = self.scanner.read_line()
+  content_buf.write_string(line)
+
+  if char_is(self.scanner.peek(), '\n') {
+    self.scanner.advance(1)
+  }
+
+  let content = content_buf.to_string()
+  let children : Array[Block] = []
   let (checked, actual_content) = parse_task_checkbox(content)
 
   if not(actual_content.is_empty()) {

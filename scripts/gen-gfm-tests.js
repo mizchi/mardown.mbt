@@ -43,10 +43,7 @@ const SKIP_TESTS = {
     reason: 'Extended autolink not implemented',
     examples: [621, 622, 623, 624, 625, 626, 627, 628, 629, 630, 631],
   },
-  'Task list items (extension)': {
-    reason: 'Task list edge case',
-    examples: [280],  // 279 passes
-  },
+  // Task list items: All tests pass (279, 280)
   'Disallowed Raw HTML (extension)': {
     reason: 'HTML filtering not implemented',
     examples: [652],
