@@ -33,11 +33,11 @@ const GFM_EXTENSION_SECTIONS = [
 const SKIP_TESTS = {
   'Tables (extension)': {
     reason: 'Table edge case',
-    examples: [198, 199, 200, 201, 202, 203, 204, 205],
+    examples: [199, 200, 201, 202, 203, 204],  // 198, 205 pass
   },
   'Strikethrough (extension)': {
     reason: 'Strikethrough edge case',
-    examples: [492],
+    examples: [492],  // 491 passes
   },
   'Autolinks (extension)': {
     reason: 'Extended autolink not implemented',
@@ -45,7 +45,7 @@ const SKIP_TESTS = {
   },
   'Task list items (extension)': {
     reason: 'Task list edge case',
-    examples: [280],
+    examples: [280],  // 279 passes
   },
   'Disallowed Raw HTML (extension)': {
     reason: 'HTML filtering not implemented',

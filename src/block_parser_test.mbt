@@ -348,6 +348,7 @@ test "serialize table roundtrip" {
   let result = parse(source)
   let output = serialize(result.document)
   inspect(output.contains("| A |"), content="true")
-  inspect(output.contains(":---|"), content="true")
-  inspect(output.contains("---:|"), content="true")
+  // remark-gfm style: | :-- | (left) and | --: | (right)
+  inspect(output.contains("| :-- |"), content="true")
+  inspect(output.contains("| --: |"), content="true")
 }

@@ -255,14 +255,14 @@ fn serialize_block(block : Block, buf : StringBuilder) -> Unit {
         buf.write_string(" |")
       }
       buf.write_char('\n')
-      // Separator row
+      // Separator row (remark-gfm style)
       buf.write_char('|')
       for align in alignments {
         match align {
-          TableAlign::Left => buf.write_string(":---|")
-          TableAlign::Center => buf.write_string(":---:|")
-          TableAlign::Right => buf.write_string("---:|")
-          TableAlign::None => buf.write_string("---|")
+          TableAlign::Left => buf.write_string(" :-- |")
+          TableAlign::Center => buf.write_string(" :-: |")
+          TableAlign::Right => buf.write_string(" --: |")
+          TableAlign::None => buf.write_string(" --- |")
         }
       }
       buf.write_char('\n')
