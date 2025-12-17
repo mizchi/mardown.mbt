@@ -1,94 +1,94 @@
 [mizchi/markdown] bench bench.mbt:54 ("parse: small document (5 sections)") ok
 time (mean ± σ)         range (min … max) 
-  97.24 µs ±   3.74 µs    92.52 µs … 102.87 µs  in 10 ×    976 runs
+ 106.69 µs ±   3.13 µs   102.74 µs … 112.72 µs  in 10 ×    837 runs
 [mizchi/markdown] bench bench.mbt:61 ("parse: medium document (20 sections)") ok
 time (mean ± σ)         range (min … max) 
- 382.26 µs ±  48.13 µs   356.44 µs … 486.05 µs  in 10 ×    280 runs
+ 388.92 µs ±   3.02 µs   385.15 µs … 394.48 µs  in 10 ×    226 runs
 [mizchi/markdown] bench bench.mbt:68 ("parse: large document (100 sections)") ok
 time (mean ± σ)         range (min … max) 
-   2.03 ms ±  80.02 µs     1.97 ms …   2.19 ms  in 10 ×     51 runs
+   2.12 ms ±   7.53 µs     2.11 ms …   2.13 ms  in 10 ×     42 runs
 [mizchi/markdown] bench bench.mbt:75 ("serialize: small document") ok
 time (mean ± σ)         range (min … max) 
-   4.95 µs ±   0.38 µs     4.77 µs …   5.99 µs  in 10 ×  19734 runs
+   4.67 µs ±   0.06 µs     4.62 µs …   4.81 µs  in 10 ×  21283 runs
 [mizchi/markdown] bench bench.mbt:83 ("serialize: medium document") ok
 time (mean ± σ)         range (min … max) 
-  19.56 µs ±   0.34 µs    19.26 µs …  20.31 µs  in 10 ×   4761 runs
+  19.11 µs ±   0.12 µs    18.98 µs …  19.28 µs  in 10 ×   5222 runs
 [mizchi/markdown] bench bench.mbt:91 ("roundtrip: small document") ok
 time (mean ± σ)         range (min … max) 
-  99.75 µs ±   1.66 µs    97.90 µs … 102.42 µs  in 10 ×    994 runs
+ 107.14 µs ±   1.67 µs   105.59 µs … 111.03 µs  in 10 ×    948 runs
 [mizchi/markdown] bench bench.mbt:99 ("roundtrip: medium document") ok
 time (mean ± σ)         range (min … max) 
- 385.78 µs ±   4.58 µs   380.71 µs … 395.80 µs  in 10 ×    248 runs
+ 410.76 µs ±   1.19 µs   408.94 µs … 412.69 µs  in 10 ×    244 runs
 [mizchi/markdown] bench bench.mbt:118 ("inline: simple text") ok
 time (mean ± σ)         range (min … max) 
-   0.41 µs ±   0.01 µs     0.40 µs …   0.42 µs  in 10 × 100000 runs
+   0.47 µs ±   0.01 µs     0.46 µs …   0.49 µs  in 10 × 100000 runs
 [mizchi/markdown] bench bench.mbt:125 ("inline: emphasis/strong/code") ok
 time (mean ± σ)         range (min … max) 
-   1.30 µs ±   0.01 µs     1.28 µs …   1.32 µs  in 10 ×  76214 runs
+   1.33 µs ±   0.00 µs     1.32 µs …   1.33 µs  in 10 ×  75385 runs
 [mizchi/markdown] bench bench.mbt:132 ("inline: links and images") ok
 time (mean ± σ)         range (min … max) 
-   3.27 µs ±   0.18 µs     3.13 µs …   3.62 µs  in 10 ×  31493 runs
+   3.50 µs ±   0.60 µs     3.15 µs …   4.96 µs  in 10 ×  31071 runs
 [mizchi/markdown] bench bench.mbt:139 ("inline: many markers") ok
 time (mean ± σ)         range (min … max) 
-   1.55 µs ±   0.04 µs     1.52 µs …   1.61 µs  in 10 ×  64477 runs
+   1.44 µs ±   0.05 µs     1.41 µs …   1.58 µs  in 10 ×  67779 runs
 [mizchi/markdown] bench bench.mbt:176 ("table: simple 2x1") ok
 time (mean ± σ)         range (min … max) 
-   2.24 µs ±   0.03 µs     2.20 µs …   2.30 µs  in 10 ×  44120 runs
+   2.19 µs ±   0.01 µs     2.17 µs …   2.20 µs  in 10 ×  45209 runs
 [mizchi/markdown] bench bench.mbt:183 ("table: medium 4x5") ok
 time (mean ± σ)         range (min … max) 
-  11.58 µs ±   1.38 µs    10.18 µs …  14.48 µs  in 10 ×   6916 runs
+   9.47 µs ±   0.96 µs     9.04 µs …  12.19 µs  in 10 ×  11022 runs
 [mizchi/markdown] bench bench.mbt:190 ("table: large 5x20") ok
 time (mean ± σ)         range (min … max) 
-  66.80 µs ±  11.82 µs    56.76 µs …  91.94 µs  in 10 ×   1796 runs
+  52.81 µs ±   0.24 µs    52.39 µs …  53.19 µs  in 10 ×   1906 runs
 [mizchi/markdown] bench bench.mbt:198 ("scanner: read_line 100x") ok
 time (mean ± σ)         range (min … max) 
-   6.50 µs ±   0.09 µs     6.43 µs …   6.68 µs  in 10 ×  15195 runs
+   6.42 µs ±   0.04 µs     6.39 µs …   6.54 µs  in 10 ×  15623 runs
 [mizchi/markdown] bench bench.mbt:214 ("scanner: peek/advance intensive") ok
 time (mean ± σ)         range (min … max) 
-  31.68 µs ±   3.14 µs    30.14 µs …  40.27 µs  in 10 ×   3316 runs
+  35.01 µs ±   4.13 µs    31.11 µs …  41.58 µs  in 10 ×   3221 runs
 [mizchi/markdown] bench bench.mbt:231 ("block: minimal inline content") ok
 time (mean ± σ)         range (min … max) 
-   6.88 µs ±   0.07 µs     6.80 µs …   7.00 µs  in 10 ×  14369 runs
+   6.61 µs ±   0.17 µs     6.44 µs …   6.94 µs  in 10 ×  14661 runs
 [mizchi/markdown] bench bench.mbt:293 ("full parse: 10 paragraphs") ok
 time (mean ± σ)         range (min … max) 
-  65.99 µs ±   2.90 µs    63.24 µs …  70.55 µs  in 10 ×   1438 runs
+  61.73 µs ±   6.43 µs    58.57 µs …  79.90 µs  in 10 ×   1692 runs
 [mizchi/markdown] bench bench.mbt:301 ("incremental: 10 paragraphs, edit middle") ok
 time (mean ± σ)         range (min … max) 
-   6.74 µs ±   0.04 µs     6.69 µs …   6.82 µs  in 10 ×  14914 runs
+   6.56 µs ±   0.16 µs     6.42 µs …   6.84 µs  in 10 ×  15464 runs
 [mizchi/markdown] bench bench.mbt:311 ("full parse: 50 paragraphs") ok
 time (mean ± σ)         range (min … max) 
- 316.09 µs ±   3.08 µs   312.10 µs … 320.95 µs  in 10 ×    317 runs
+ 341.62 µs ± 107.02 µs   292.71 µs … 629.91 µs  in 10 ×    334 runs
 [mizchi/markdown] bench bench.mbt:319 ("incremental: 50 paragraphs, edit middle") ok
 time (mean ± σ)         range (min … max) 
-   8.00 µs ±   0.19 µs     7.81 µs …   8.39 µs  in 10 ×   4165 runs
+   7.42 µs ±   0.06 µs     7.37 µs …   7.59 µs  in 10 ×  13117 runs
 [mizchi/markdown] bench bench.mbt:329 ("full parse: 100 paragraphs") ok
 time (mean ± σ)         range (min … max) 
- 636.25 µs ±  14.72 µs   616.85 µs … 659.31 µs  in 10 ×     97 runs
+ 585.78 µs ±   5.49 µs   581.67 µs … 600.71 µs  in 10 ×    168 runs
 [mizchi/markdown] bench bench.mbt:337 ("incremental: 100 paragraphs, edit middle") ok
 time (mean ± σ)         range (min … max) 
-  13.47 µs ±   0.10 µs    13.36 µs …  13.69 µs  in 10 ×   7508 runs
+  12.66 µs ±   0.02 µs    12.62 µs …  12.68 µs  in 10 ×   7905 runs
 [mizchi/markdown] bench bench.mbt:347 ("incremental: 50 paragraphs, edit start") ok
 time (mean ± σ)         range (min … max) 
-   3.37 µs ±   0.52 µs     3.06 µs …   4.76 µs  in 10 ×  32690 runs
+   3.06 µs ±   0.01 µs     3.04 µs …   3.08 µs  in 10 ×  30978 runs
 [mizchi/markdown] bench bench.mbt:358 ("incremental: 50 paragraphs, edit end") ok
 time (mean ± σ)         range (min … max) 
-   3.95 µs ±   0.18 µs     3.78 µs …   4.32 µs  in 10 ×  19852 runs
+   3.56 µs ±   0.03 µs     3.54 µs …   3.65 µs  in 10 ×  28014 runs
 [mizchi/markdown] bench bench.mbt:371 ("crdt: LogicalId generation 1000x") ok
 time (mean ± σ)         range (min … max) 
-   0.92 µs ±   0.01 µs     0.91 µs …   0.93 µs  in 10 × 100000 runs
+   0.87 µs ±   0.00 µs     0.86 µs …   0.87 µs  in 10 × 100000 runs
 [mizchi/markdown] bench bench.mbt:382 ("crdt: LogicalId compare 1000x") ok
 time (mean ± σ)         range (min … max) 
-   3.30 µs ±   0.07 µs     3.25 µs …   3.45 µs  in 10 ×  30571 runs
+   2.97 µs ±   0.09 µs     2.80 µs …   3.08 µs  in 10 ×  33337 runs
 [mizchi/markdown] bench bench.mbt:402 ("crdt: CrdtDocument insert 100 runs") ok
 time (mean ± σ)         range (min … max) 
-   1.10 µs ±   0.30 µs     0.97 µs …   1.95 µs  in 10 ×  94876 runs
+   0.96 µs ±   0.01 µs     0.95 µs …   0.96 µs  in 10 × 100000 runs
 [mizchi/markdown] bench bench.mbt:413 ("crdt: CrdtDocument with 50% tombstones") ok
 time (mean ± σ)         range (min … max) 
-   1.37 µs ±   0.64 µs     0.84 µs …   2.61 µs  in 10 × 100000 runs
+   0.80 µs ±   0.01 µs     0.79 µs …   0.82 µs  in 10 × 100000 runs
 [mizchi/markdown] bench bench.mbt:429 ("crdt: Span creation 1000x") ok
 time (mean ± σ)         range (min … max) 
-   1.27 µs ±   0.04 µs     1.22 µs …   1.33 µs  in 10 ×  81240 runs
+   1.15 µs ±   0.01 µs     1.14 µs …   1.18 µs  in 10 ×  83691 runs
 [mizchi/markdown] bench bench.mbt:439 ("crdt: CrdtSpan creation 1000x") ok
 time (mean ± σ)         range (min … max) 
-   4.49 µs ±   0.38 µs     4.21 µs …   5.16 µs  in 10 ×  21615 runs
+   4.08 µs ±   0.07 µs     4.02 µs …   4.24 µs  in 10 ×  24940 runs
 Total tests: 31, passed: 31, failed: 0.
