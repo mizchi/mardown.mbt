@@ -202,21 +202,7 @@ fn serialize_block(block : Block, buf : StringBuilder) -> Unit {
 
     Block::OrderedList(start~, items~, ..) => {
       // GFM style: always use ., no marker_offset
-      let mut num = start
-      for item in items {
-        buf.write_string(num.to_string())
-        buf.write_string(". ")
-        // Serialize item content
-        for child in item.children {
-          match child {
-            Block::Paragraph(children=para_children, ..) =>
-              serialize_inlines(para_children, buf)
-            _ => serialize_block(child, buf)
-          }
-        }
-        buf.write_char('\n')
-        num += 1
-      }
+      serialize_ordered_list_items(items, buf, 0, start)
     }
 
     Block::HtmlBlock(html~, ..) => {
@@ -468,5 +454,64 @@ fn serialize_bullet_list_items(
     if first_block {
       buf.write_char('\n')
     }
+  }
+}
+
+///| Serialize ordered list items with indentation
+fn serialize_ordered_list_items(
+  items : Array[ListItem],
+  buf : StringBuilder,
+  indent : Int,
+  start : Int
+) -> Unit {
+  let mut num = start
+  for item in items {
+    // Write indentation
+    write_chars(buf, ' ', indent)
+    buf.write_string(num.to_string())
+    buf.write_string(". ")
+
+    // Task list checkbox (rare for ordered lists but supported)
+    match item.checked {
+      Some(true) => buf.write_string("[x] ")
+      Some(false) => buf.write_string("[ ] ")
+      None => ()
+    }
+
+    // Serialize item content
+    let mut first_block = true
+    for child in item.children {
+      match child {
+        Block::Paragraph(children=para_children, ..) => {
+          serialize_inlines(para_children, buf)
+          buf.write_char('\n')
+          first_block = false
+        }
+        Block::BulletList(items=nested_items, ..) => {
+          // Nested bullet list - serialize with increased indentation
+          if first_block {
+            buf.write_char('\n')
+          }
+          serialize_bullet_list_items(nested_items, buf, indent + 3)
+        }
+        Block::OrderedList(items=nested_items, start=nested_start, ..) => {
+          // Nested ordered list
+          if first_block {
+            buf.write_char('\n')
+          }
+          serialize_ordered_list_items(nested_items, buf, indent + 3, nested_start)
+        }
+        _ => {
+          serialize_block(child, buf)
+          first_block = false
+        }
+      }
+    }
+
+    // If no content was written, add newline
+    if first_block {
+      buf.write_char('\n')
+    }
+    num += 1
   }
 }

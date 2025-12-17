@@ -91,7 +91,7 @@ const SKIP_TESTS = {
   // List items: Complex indentation and lazy continuation
   'List items': {
     reason: 'List item edge case',
-    examples: [254, 256, 258, 259, 260, 262, 263, 264, 266, 270, 271, 273, 274, 277, 278, 279, 280, 281, 282, 283, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 296, 298, 299, 300],
+    examples: [254, 256, 258, 259, 260, 262, 263, 264, 266, 270, 271, 273, 274, 277, 278, 279, 280, 281, 282, 283, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 296, 297, 298, 299, 300],
   },
   // Lists: Tight/loose distinction and complex nesting
   'Lists': {
