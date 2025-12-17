@@ -2,7 +2,7 @@
 
 ## Current Status
 
-- **CommonMark tests**: 189/542 passing (34.9%)
+- **CommonMark tests**: 201/542 passing (37.1%)
 - **Main tests**: 73/73 passing (100%)
 - **Serializer**: Normalized to remark-gfm output style
 
@@ -10,7 +10,7 @@
 
 ### Parser Improvements
 
-- [ ] **Code spans**: 0/22 tests passing - parser doesn't recognize inline code properly
+- [x] **Code spans**: 9/22 tests passing - basic inline code works, edge cases remain
 - [ ] **Emphasis edge cases**: Many failing tests related to delimiter matching
 - [ ] **Nested lists**: Complex list nesting not handled correctly
 - [ ] **Link parsing**: Nested brackets and escape handling needs work
@@ -79,7 +79,7 @@
 | Images | 5 | 22 | 22.7% |
 | Lists | 5 | 26 | 19.2% |
 | Links | 15 | 90 | 16.7% |
-| Code spans | 0 | 22 | 0% |
+| Code spans | 9 | 22 | 40.9% |
 
 ## Notes
 
