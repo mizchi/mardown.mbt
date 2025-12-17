@@ -4,7 +4,7 @@
 
 - **Main tests**: 108/108 passing (100%)
 - **CommonMark tests (strict=true)**: 205/205 passing (100%)
-- **GFM tests**: 25/25 passing (100%)
+- **GFM tests**: 26/26 passing (100%)
 - **Skipped tests**: 337 (complex edge cases)
 - **Serializer**: Normalized to remark-gfm output style
 
@@ -40,6 +40,7 @@ let doc = parse(source, strict=true)
 - [x] **Emphasis flanking rules**: Full CommonMark compliance in strict mode
 - [x] **Hard line breaks**: Fixed in parse_segment_simple
 - [x] **Link/Image parsing in strict mode**: Added to parse_segment_simple
+- [x] **HTML block parsing**: Block-level HTML tags preserved as HtmlBlock
 - [ ] **Nested lists**: Complex list nesting not handled correctly
 - [ ] **Reference link resolution**: Parsed but not fully resolved
 

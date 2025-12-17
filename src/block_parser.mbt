@@ -133,6 +133,12 @@ fn BlockParser::parse_block(self : BlockParser) -> Block? {
     None => self.scanner.restore(start)
   }
 
+  // HTML block
+  match self.try_parse_html_block(start) {
+    Some(block) => return Some(block)
+    None => self.scanner.restore(start)
+  }
+
   // GFM Table
   match self.try_parse_table(start) {
     Some(block) => return Some(block)
@@ -971,6 +977,105 @@ fn BlockParser::try_parse_setext_heading(self : BlockParser, start : Int) -> Blo
     style=HeadingStyle::Setext,
     children~,
     closing_hashes=0,
+    span=Span::new(start, self.scanner.pos),
+    leading_trivia=leading,
+    trailing_trivia=Trivia::empty(),
+  ))
+}
+
+///| HTML block-level tag names (CommonMark Type 6)
+let html_block_tags : Array[String] = [
+  "address", "article", "aside", "base", "basefont", "blockquote", "body",
+  "caption", "center", "col", "colgroup", "dd", "details", "dialog", "dir",
+  "div", "dl", "dt", "fieldset", "figcaption", "figure", "footer", "form",
+  "frame", "frameset", "h1", "h2", "h3", "h4", "h5", "h6", "head", "header",
+  "hr", "html", "iframe", "legend", "li", "link", "main", "menu", "menuitem",
+  "nav", "noframes", "ol", "optgroup", "option", "p", "param", "search",
+  "section", "summary", "table", "tbody", "td", "tfoot", "th", "thead",
+  "title", "tr", "track", "ul",
+]
+
+///| Check if a tag name is a block-level HTML tag
+fn is_html_block_tag(tag : String) -> Bool {
+  let lower = tag.to_lower()
+  for t in html_block_tags {
+    if lower == t {
+      return true
+    }
+  }
+  false
+}
+
+///| Try to parse HTML block
+fn BlockParser::try_parse_html_block(self : BlockParser, start : Int) -> Block? {
+  let saved = self.scanner.pos
+  let leading = self.read_leading_trivia()
+
+  // HTML blocks must start with <
+  if not(char_is(self.scanner.peek(), '<')) {
+    self.scanner.restore(saved)
+    return None
+  }
+
+  // Peek ahead to check for valid HTML block start
+  let peek_pos = self.scanner.pos
+  self.scanner.advance(1)  // Skip <
+
+  // Check for closing tag </tag>
+  let is_closing = char_is(self.scanner.peek(), '/')
+  if is_closing {
+    self.scanner.advance(1)
+  }
+
+  // Read tag name
+  let tag_buf = StringBuilder::new()
+  while not(self.scanner.is_eof()) {
+    match self.scanner.peek() {
+      Some(c) if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') => {
+        tag_buf.write_char(c)
+        self.scanner.advance(1)
+      }
+      _ => break
+    }
+  }
+
+  let tag_name = tag_buf.to_string()
+  if tag_name.is_empty() {
+    self.scanner.restore(saved)
+    return None
+  }
+
+  // Check if this is a block-level tag
+  if not(is_html_block_tag(tag_name)) {
+    self.scanner.restore(saved)
+    return None
+  }
+
+  // Restore to start and read entire HTML block
+  self.scanner.restore(peek_pos)
+
+  let content_buf = StringBuilder::new()
+
+  // Read lines until blank line or end of document
+  while not(self.scanner.is_eof()) {
+    let line = self.scanner.read_line()
+    content_buf.write_string(line)
+
+    if char_is(self.scanner.peek(), '\n') {
+      content_buf.write_char('\n')
+      self.scanner.advance(1)
+    }
+
+    // Check for blank line (end of HTML block type 6/7)
+    if self.scanner.is_blank_line() {
+      break
+    }
+  }
+
+  let html = content_buf.to_string()
+
+  Some(Block::HtmlBlock(
+    html~,
     span=Span::new(start, self.scanner.pos),
     leading_trivia=leading,
     trailing_trivia=Trivia::empty(),
