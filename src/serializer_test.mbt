@@ -11,7 +11,8 @@ test "serialize heading with closing hashes" {
   let source = "## Title ##\n"
   let result = parse(source)
   let output = serialize(result.document)
-  inspect(output, content="## Title ##\n")
+  // GFM style: closing hashes are removed
+  inspect(output, content="## Title\n")
 }
 
 test "serialize paragraph" {
@@ -32,7 +33,8 @@ test "serialize fenced code with tilde" {
   let source = "~~~python\nprint('hello')\n~~~\n"
   let result = parse(source)
   let output = serialize(result.document)
-  inspect(output, content="~~~python\nprint('hello')\n~~~\n")
+  // GFM style: tilde fences are converted to backtick fences
+  inspect(output, content="```python\nprint('hello')\n```\n")
 }
 
 test "serialize thematic break" {

@@ -10,8 +10,21 @@ pub fn serialize(doc : Document) -> String {
     None => ()
   }
 
-  // Serialize blocks
+  // Serialize blocks with blank lines between them (GFM style)
+  let mut first = true
   for block in doc.children {
+    // Skip leading BlankLines
+    match block {
+      Block::BlankLines(..) => continue
+      _ => ()
+    }
+
+    // Add blank line between blocks (except for first block)
+    if not(first) {
+      buf.write_char('\n')
+    }
+    first = false
+
     serialize_block(block, buf)
   }
 
@@ -35,97 +48,94 @@ fn write_chars(buf : StringBuilder, c : Char, n : Int) -> Unit {
   }
 }
 
+///| Calculate minimum fence length for code block
+fn calc_fence_length(code : String) -> Int {
+  let mut fence_len = 3
+  let mut count = 0
+  for c in code {
+    if c == '`' {
+      count = count + 1
+    } else {
+      if count >= fence_len {
+        fence_len = count + 1
+      }
+      count = 0
+    }
+  }
+  // Check final run of backticks
+  if count >= fence_len {
+    fence_len = count + 1
+  }
+  fence_len
+}
+
 ///| Serialize a block
 fn serialize_block(block : Block, buf : StringBuilder) -> Unit {
   match block {
-    Block::ThematicBreak(leading_trivia~, trailing_trivia~, ..) => {
-      buf.write_string(leading_trivia.content)
-      // Always use *** for GFM compatibility (remark default)
-      buf.write_string("***")
-      buf.write_string(trailing_trivia.content)
-      if not(trailing_trivia.content.has_suffix("\n")) {
-        buf.write_char('\n')
-      }
+    Block::ThematicBreak(..) => {
+      // GFM style: no leading trivia, always use ***
+      buf.write_string("***\n")
     }
 
-    Block::Heading(level~, style~, children~, closing_hashes~, leading_trivia~, trailing_trivia~, ..) => {
-      buf.write_string(leading_trivia.content)
+    Block::Heading(level~, style~, children~, ..) => {
+      // GFM style: no leading trivia, no closing hashes
       match style {
         HeadingStyle::Atx => {
           write_chars(buf, '#', level)
-          buf.write_char(' ')
-          serialize_inlines(children, buf)
-          if closing_hashes > 0 {
+          if not(children.is_empty()) {
             buf.write_char(' ')
-            write_chars(buf, '#', closing_hashes)
+            serialize_inlines(children, buf)
           }
-          buf.write_string(trailing_trivia.content)
-          if not(trailing_trivia.content.has_suffix("\n")) {
-            buf.write_char('\n')
-          }
+          buf.write_char('\n')
         }
         HeadingStyle::Setext => {
           serialize_inlines(children, buf)
           buf.write_char('\n')
           let underline_char = if level == 1 { '=' } else { '-' }
-          // At least 3 chars for consistency
           write_chars(buf, underline_char, 3)
           buf.write_char('\n')
         }
       }
     }
 
-    Block::Paragraph(children~, leading_trivia~, trailing_trivia~, ..) => {
-      buf.write_string(leading_trivia.content)
+    Block::Paragraph(children~, ..) => {
+      // GFM style: no leading/trailing trivia
       serialize_inlines(children, buf)
-      buf.write_string(trailing_trivia.content)
-      if not(trailing_trivia.content.has_suffix("\n")) {
-        buf.write_char('\n')
-      }
+      buf.write_char('\n')
     }
 
-    Block::FencedCode(fence_marker~, fence_length~, info~, code~, indent~, leading_trivia~, trailing_trivia~, ..) => {
-      buf.write_string(leading_trivia.content)
-      // Leading indent
-      write_chars(buf, ' ', indent)
-      // Opening fence
-      let fence_char = match fence_marker {
-        FenceMarker::Backtick => '`'
-        FenceMarker::Tilde => '~'
-      }
-      write_chars(buf, fence_char, fence_length)
+    Block::FencedCode(info~, code~, ..) => {
+      // GFM style: always use ``` (remark default)
+      let fence_len = calc_fence_length(code)
+      write_chars(buf, '`', fence_len)
       if not(info.is_empty()) {
         buf.write_string(info)
       }
       buf.write_char('\n')
-      // Code content
       buf.write_string(code)
       if not(code.is_empty()) && not(code.has_suffix("\n")) {
         buf.write_char('\n')
       }
-      // Closing fence
-      write_chars(buf, ' ', indent)
-      write_chars(buf, fence_char, fence_length)
-      buf.write_string(trailing_trivia.content)
-      if not(trailing_trivia.content.has_suffix("\n")) {
-        buf.write_char('\n')
-      }
+      write_chars(buf, '`', fence_len)
+      buf.write_char('\n')
     }
 
-    Block::IndentedCode(code~, leading_trivia~, trailing_trivia~, ..) => {
-      buf.write_string(leading_trivia.content)
-      for line in code.split("\n") {
-        buf.write_string("    ")
-        buf.write_string(line.to_string())
+    Block::IndentedCode(code~, ..) => {
+      // remark converts indented code to fenced code
+      let fence_len = calc_fence_length(code)
+      write_chars(buf, '`', fence_len)
+      buf.write_char('\n')
+      buf.write_string(code)
+      if not(code.is_empty()) && not(code.has_suffix("\n")) {
         buf.write_char('\n')
       }
-      buf.write_string(trailing_trivia.content)
+      write_chars(buf, '`', fence_len)
+      buf.write_char('\n')
     }
 
-    Block::Blockquote(children~, leading_trivia~, trailing_trivia~, ..) => {
-      buf.write_string(leading_trivia.content)
+    Block::Blockquote(children~, ..) => {
+      // Serialize each block with > prefix
       for child in children {
-        // Serialize each block with > prefix
         let child_buf = StringBuilder::new()
         serialize_block(child, child_buf)
         let child_str = child_buf.to_string()
@@ -138,18 +148,12 @@ fn serialize_block(block : Block, buf : StringBuilder) -> Unit {
           }
         }
       }
-      buf.write_string(trailing_trivia.content)
     }
 
-    Block::BulletList(items~, leading_trivia~, trailing_trivia~, ..) => {
-      buf.write_string(leading_trivia.content)
-      // Always use * for GFM compatibility (remark default)
-      let marker_char = '*'
+    Block::BulletList(items~, ..) => {
+      // GFM style: always use *, no marker_offset
       for item in items {
-        // Write leading spaces for marker
-        write_chars(buf, ' ', item.marker_offset)
-        buf.write_char(marker_char)
-        buf.write_char(' ')
+        buf.write_string("* ")
 
         // Task list checkbox
         match item.checked {
@@ -168,22 +172,14 @@ fn serialize_block(block : Block, buf : StringBuilder) -> Unit {
         }
         buf.write_char('\n')
       }
-      buf.write_string(trailing_trivia.content)
     }
 
-    Block::OrderedList(start~, delimiter~, items~, leading_trivia~, trailing_trivia~, ..) => {
-      buf.write_string(leading_trivia.content)
-      let delim_char = match delimiter {
-        OrderedDelimiter::Dot => '.'
-        OrderedDelimiter::Paren => ')'
-      }
+    Block::OrderedList(start~, items~, ..) => {
+      // GFM style: always use ., no marker_offset
       let mut num = start
       for item in items {
-        // Write leading spaces for marker
-        write_chars(buf, ' ', item.marker_offset)
         buf.write_string(num.to_string())
-        buf.write_char(delim_char)
-        buf.write_char(' ')
+        buf.write_string(". ")
         // Serialize item content
         for child in item.children {
           match child {
@@ -195,14 +191,11 @@ fn serialize_block(block : Block, buf : StringBuilder) -> Unit {
         buf.write_char('\n')
         num += 1
       }
-      buf.write_string(trailing_trivia.content)
     }
 
-    Block::HtmlBlock(html~, leading_trivia~, trailing_trivia~, ..) => {
-      buf.write_string(leading_trivia.content)
+    Block::HtmlBlock(html~, ..) => {
       buf.write_string(html)
-      buf.write_string(trailing_trivia.content)
-      if not(trailing_trivia.content.has_suffix("\n")) {
+      if not(html.has_suffix("\n")) {
         buf.write_char('\n')
       }
     }
@@ -263,11 +256,9 @@ fn serialize_inline(inline : Inline, buf : StringBuilder) -> Unit {
 
     Inline::SoftBreak(..) => buf.write_char('\n')
 
-    Inline::HardBreak(style~, ..) => {
-      match style {
-        HardBreakStyle::TwoSpaces => buf.write_string("  \n")
-        HardBreakStyle::Backslash => buf.write_string("\\\n")
-      }
+    Inline::HardBreak(..) => {
+      // remark uses backslash style by default
+      buf.write_string("\\\n")
     }
 
     Inline::Emphasis(children~, ..) => {
@@ -317,11 +308,8 @@ fn serialize_inline(inline : Inline, buf : StringBuilder) -> Unit {
       buf.write_char(']')
     }
 
-    Inline::Autolink(url~, is_email~, ..) => {
+    Inline::Autolink(url~, ..) => {
       buf.write_char('<')
-      if is_email {
-        buf.write_string("mailto:")
-      }
       buf.write_string(url)
       buf.write_char('>')
     }
