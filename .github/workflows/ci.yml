@@ -34,6 +34,19 @@ jobs:
           moon update
           moon check
       - name: Test all
-        run: moon test --target all
+        run: |
+          moon test src --target all
+      - name: Moon test
+        run: |
+          moon test src/cmark_tests --target js
+      - name: Moon test
+        run: |
+          moon test src/gfm_tests --target js
+      - name: Moon test
+        run: |
+          moon test src/html_tests --target js
+      - name: Moon test
+        run: |
+          moon test src/tui --target all
       - name: Test Bench
         run: moon bench
