@@ -29,11 +29,12 @@ pub fn parse_code_block_info(info : String) -> CodeBlockInfo {
   }
 
   // Find meta section (starts with space + {)
+  let trimmed_len = trimmed.iter().count()
   let (main_part, meta) = match trimmed.find(" {") {
     Some(idx) => {
-      let main = trimmed.substring(start=0, end=idx)
+      let main = trimmed.unsafe_substring(start=0, end=idx)
       let meta_str = trimmed
-        .substring(start=idx + 1, end=trimmed.iter().count())
+        .unsafe_substring(start=idx + 1, end=trimmed_len)
         .trim_space()
         .to_string()
       (main, meta_str)
@@ -42,13 +43,11 @@ pub fn parse_code_block_info(info : String) -> CodeBlockInfo {
   }
 
   // Split lang:filename
+  let main_len = main_part.iter().count()
   match main_part.find(":") {
     Some(idx) => {
-      let lang = main_part.substring(start=0, end=idx)
-      let filename = main_part.substring(
-        start=idx + 1,
-        end=main_part.iter().count(),
-      )
+      let lang = main_part.unsafe_substring(start=0, end=idx)
+      let filename = main_part.unsafe_substring(start=idx + 1, end=main_len)
       { lang, filename, meta }
     }
     None => { lang: main_part, filename: "", meta }

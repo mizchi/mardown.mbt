@@ -66,16 +66,18 @@ fn trim_trailing_space_from_last_text(inlines : Array[Inline]) -> Unit {
   let len = content.length()
   guard len > 0 else { return }
   // Quick check: does it end with space?
-  guard content[len - 1] == ' ' else { return }
+  guard content.unsafe_charcode_at(len - 1) == ' ' else { return }
   // Find last non-space character
   let mut end = len - 1
-  while end > 0 && content[end - 1] == ' ' {
+  while end > 0 && content.unsafe_charcode_at(end - 1) == ' ' {
     end = end - 1
   }
   // Now trim
   let _ = inlines.pop()
   if end > 0 {
-    inlines.push(Inline::Text(content=content.substring(end~), span~))
+    inlines.push(
+      Inline::Text(content=content.unsafe_substring(start=0, end~), span~),
+    )
   }
 }
 
@@ -1274,7 +1276,7 @@ fn build_inlines_recursive(
 
     // Add text before this emphasis
     if opener_pos > pos {
-      let segment = text.substring(start=pos, end=opener_pos)
+      let segment = text.unsafe_substring(start=pos, end=opener_pos)
       // Parse segment for other inline elements (code, links, etc.)
       let segment_inlines = parse_segment_simple(segment, pos)
       for inline in segment_inlines {
@@ -1307,7 +1309,7 @@ fn build_inlines_recursive(
       // Note: nested matches will be skipped naturally by position check
     } else {
       // No nested emphasis, parse content simply
-      let content = text.substring(start=content_start, end=content_end)
+      let content = text.unsafe_substring(start=content_start, end=content_end)
       let content_inlines = parse_segment_simple(content, content_start)
       for inline in content_inlines {
         children.push(inline)
@@ -1331,7 +1333,7 @@ fn build_inlines_recursive(
 
   // Add remaining text
   if pos < end {
-    let segment = text.substring(start=pos, end~)
+    let segment = text.unsafe_substring(start=pos, end~)
     let segment_inlines = parse_segment_simple(segment, pos)
     for inline in segment_inlines {
       result.push(inline)
@@ -1383,7 +1385,7 @@ fn parse_segment_simple(text : String, offset : Int) -> Array[Inline] {
               if chars[0] == ' ' &&
                 chars[chars.length() - 1] == ' ' &&
                 not(is_all_spaces(content)) {
-                content.substring(start=1, end=content.length() - 1)
+                content.unsafe_substring(start=1, end=content.length() - 1)
               } else {
                 content
               }

@@ -517,7 +517,7 @@ fn MultiPassParser::substring(
     } else {
       end
     }
-    self.text.substring(start~, end=actual_end)
+    self.text.unsafe_substring(start~, end=actual_end)
   }
 }
 
@@ -573,7 +573,7 @@ fn MultiPassParser::parse_code_span(
           if first == Some(' ') &&
             last == Some(' ') &&
             not(is_all_spaces_mp(content)) {
-            content.substring(start=1, end=content.length() - 1)
+            content.unsafe_substring(start=1, end=content.length() - 1)
           } else {
             content
           }
@@ -1525,7 +1525,8 @@ fn MultiPassParser::parse_range(
                   if content.get_char(content.length() - 1) == Some('\\') {
                     let _ = result.pop()
                     if content.length() > 1 {
-                      let new_content = content.substring(
+                      let new_content = content.unsafe_substring(
+                        start=0,
                         end=content.length() - 1,
                       )
                       result.push(
