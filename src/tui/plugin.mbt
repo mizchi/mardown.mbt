@@ -1,53 +1,10 @@
-///| Plugin system for TUI renderer
-///| Allows custom code block highlighters
-
-///| Parsed info string from code block fence
-///| Format: "lang:filename {meta}"
-///| Examples:
-///|   "javascript" → (lang="javascript", filename="", meta="")
-///|   "js:app.js" → (lang="js", filename="app.js", meta="")
-///|   "ts:index.ts {highlight=[1,3]}" → (lang="ts", filename="index.ts", meta="{highlight=[1,3]}")
-pub struct CodeBlockInfo {
-  lang : String
-  filename : String
-  meta : String
-}
-
-///| Parse code block info string into components
-pub fn parse_code_block_info(info : String) -> CodeBlockInfo {
-  let trimmed = info.trim_space().to_string()
-  if trimmed.is_empty() {
-    return { lang: "", filename: "", meta: "" }
-  }
-
-  // Find meta section (starts with space + {)
-  let (main_part, meta) = match trimmed.find(" {") {
-    Some(idx) => {
-      let main = trimmed.substring(start=0, end=idx)
-      let meta_str = trimmed
-        .substring(start=idx + 1, end=trimmed.iter().count())
-        .trim_space()
-        .to_string()
-      (main, meta_str)
-    }
-    None => (trimmed, "")
-  }
-
-  // Split lang:filename
-  match main_part.find(":") {
-    Some(idx) => {
-      let lang = main_part.substring(start=0, end=idx)
-      let filename = main_part.substring(start=idx + 1, end=main_part.iter().count())
-      { lang, filename, meta }
-    }
-    None => { lang: main_part, filename: "", meta }
-  }
-}
+///| TUI-specific plugin support
+///| Uses core plugin types from @markdown
 
 ///| TUI renderer options with plugin support
 pub struct TuiOptions {
-  ///| Custom code block highlighter: (CodeBlockInfo, code) -> highlighted_output
-  code_highlighter : ((CodeBlockInfo, String) -> String)?
+  ///| Custom code block highlighter
+  code_highlighter : ((@markdown.CodeBlockInfo, String) -> String)?
 }
 
 ///| Create default TUI options
@@ -56,13 +13,13 @@ pub fn TuiOptions::default() -> TuiOptions {
 }
 
 ///| Create TUI options with custom code highlighter
-pub fn TuiOptions::with_highlighter(highlighter : (CodeBlockInfo, String) -> String) -> TuiOptions {
+pub fn TuiOptions::with_highlighter(highlighter : (@markdown.CodeBlockInfo, String) -> String) -> TuiOptions {
   { code_highlighter: Some(highlighter) }
 }
 
 ///| Create TUI options with simple highlighter (lang, code) -> String
 pub fn TuiOptions::with_simple_highlighter(highlighter : (String, String) -> String) -> TuiOptions {
-  { code_highlighter: Some(fn(info : CodeBlockInfo, code : String) -> String {
+  { code_highlighter: Some(fn(info : @markdown.CodeBlockInfo, code : String) -> String {
     highlighter(info.lang, code)
   }) }
 }
@@ -89,7 +46,7 @@ fn render_block_tui_with_options(block : @markdown.Block, buf : StringBuilder, o
       match options.code_highlighter {
         Some(highlighter) => {
           // Parse info string and use custom highlighter
-          let block_info = parse_code_block_info(info)
+          let block_info = @markdown.parse_code_block_info(info)
           let highlighted = highlighter(block_info, code)
           buf.write_string(highlighted)
           buf.write_string("\n\n")

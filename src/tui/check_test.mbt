@@ -1,6 +1,6 @@
 ///|
 /// Debug tests for TUI output - run with `moon test --target js src/tui/check_test.mbt`
-const DEBUG : Bool = false
+const DEBUG : Bool = true
 
 ///|
 fn debug_println(input : String) -> Unit {
