@@ -30,7 +30,9 @@ jobs:
       - name: Generate GFM tests
         run:  node scripts/gen-gfm-tests.js
       - name: Check
-        run: moon check
+        run: |
+          moon update
+          moon check
       - name: Test all
         run: moon test --target all
       - name: Test Bench
