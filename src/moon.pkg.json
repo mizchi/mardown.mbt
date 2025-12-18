@@ -5,6 +5,8 @@
       "exports": [
         "md_parse",
         "md_render_to_string",
+        "md_render_to_html",
+        "md_to_html",
         "md_parse_incremental",
         "md_free",
         "md_parse_and_render"
@@ -14,6 +16,8 @@
       "exports": [
         "md_parse",
         "md_render_to_string",
+        "md_render_to_html",
+        "md_to_html",
         "md_parse_incremental",
         "md_free",
         "md_parse_and_render"
@@ -23,6 +27,8 @@
       "exports": [
         "md_parse",
         "md_render_to_string",
+        "md_render_to_html",
+        "md_to_html",
         "md_parse_incremental",
         "md_free",
         "md_parse_and_render"

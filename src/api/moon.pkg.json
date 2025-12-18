@@ -1,0 +1,21 @@
+{
+  "import": [
+    "mizchi/markdown"
+  ],
+  "link": {
+    "js": {
+      "exports": [
+        "md_parse_to_ast",
+        "md_get_ast",
+        "md_free_ast"
+      ]
+    },
+    "wasm-gc": {
+      "exports": [
+        "md_parse_to_ast",
+        "md_get_ast",
+        "md_free_ast"
+      ]
+    }
+  }
+}

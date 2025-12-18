@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown.mbt Playground</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+    .editor, .preview {
+      flex: 1;
+      padding: 16px;
+      overflow: auto;
+    }
+    .editor {
+      border-right: 1px solid #ccc;
+    }
+    textarea {
+      width: 100%;
+      height: 100%;
+      border: none;
+      resize: none;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 14px;
+      outline: none;
+    }
+    .preview {
+      background: #fafafa;
+    }
+    .preview pre {
+      background: #f0f0f0;
+      padding: 12px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    .preview code {
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 13px;
+    }
+    .preview table {
+      border-collapse: collapse;
+      margin: 1em 0;
+    }
+    .preview th, .preview td {
+      border: 1px solid #ccc;
+      padding: 8px 12px;
+    }
+    .preview blockquote {
+      border-left: 4px solid #ccc;
+      margin-left: 0;
+      padding-left: 16px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module" src="./main.tsx"></script>
+</body>
+</html>

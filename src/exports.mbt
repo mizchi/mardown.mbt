@@ -84,3 +84,12 @@ pub fn md_parse_and_render(source : String, strict~ : Bool = false) -> String {
   let result = parse(source, strict~)
   serialize(result.document)
 }
+
+///| Render document to HTML
+///| Returns empty string if handle is invalid
+pub fn md_render_to_html(handle : Int) -> String {
+  match get_stored(handle) {
+    Some(stored) => render_html(stored.result.document)
+    None => ""
+  }
+}

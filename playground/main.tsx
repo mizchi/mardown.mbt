@@ -1,24 +1,69 @@
-// 
-import { md_parse, md_render_to_string, md_free } from "../target/js/release/build/markdown.js";
+import { render } from "preact";
+import { useState, useCallback } from "preact/hooks";
+import { md_parse_to_ast, md_get_ast, md_free_ast } from "../target/js/release/build/api/api.js";
+import type { Document } from "./ast-types";
+import { MarkdownRenderer } from "./ast-renderer";
 
-const handle = md_parse("# Hello\n\nWorld");
-const output = md_render_to_string(handle);
+const initialMarkdown = `# Hello
 
-const textArea = document.querySelector("textarea")!
-textArea.value = output;
+This is a **bold** and *italic* text.
 
-const outputElement = document.querySelector("#output")!
-outputElement.textContent = output;
+## Features
 
-// textArea.style.width = "100%";
-// textArea.style.height = "100vh";
-textArea.addEventListener("input", (e) => {
-  const value = (e.target as HTMLTextAreaElement).value;
-  const handle = md_parse(value);
-  console.log(handle);
+- Bullet point 1
+- Bullet point 2
+- Bullet point 3
 
-  const output = md_render_to_string(handle);
-  outputElement.textContent = output;
-  md_free(handle);
-});
+### Task List
 
+- [ ] Todo item
+- [x] Completed item
+
+### Code Block
+
+\`\`\`javascript
+const x = 1;
+console.log(x);
+\`\`\`
+
+> Blockquote example
+
+| Name | Age |
+|------|-----|
+| Alice | 30 |
+| Bob | 25 |
+
+Visit [example](https://example.com) for more.
+`;
+
+function parseToAst(source: string): Document {
+  const handle = md_parse_to_ast(source);
+  const json = md_get_ast(handle);
+  md_free_ast(handle);
+  return JSON.parse(json) as Document;
+}
+
+function App() {
+  const [source, setSource] = useState(initialMarkdown);
+  const [ast, setAst] = useState<Document>(() => parseToAst(initialMarkdown));
+
+  const handleInput = useCallback((e: Event) => {
+    const target = e.target as HTMLTextAreaElement;
+    const newSource = target.value;
+    setSource(newSource);
+    setAst(parseToAst(newSource));
+  }, []);
+
+  return (
+    <div class="container">
+      <div class="editor">
+        <textarea value={source} onInput={handleInput} />
+      </div>
+      <div class="preview">
+        <MarkdownRenderer ast={ast} />
+      </div>
+    </div>
+  );
+}
+
+render(<App />, document.getElementById("app")!);

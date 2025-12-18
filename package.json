@@ -16,6 +16,7 @@
     "unified": "^11.0.5"
   },
   "devDependencies": {
+    "preact": "^10.28.0",
     "remark-gfm": "^4.0.1",
     "remark-html": "^16.0.1",
     "typescript": "^5.9.3",
