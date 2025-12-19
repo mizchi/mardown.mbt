@@ -1,6 +1,6 @@
 {
   "name": "mizchi/markdown",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "deps": {
     "rami3l/cmark": "0.4.0"
   },
