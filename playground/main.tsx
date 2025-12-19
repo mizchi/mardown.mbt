@@ -1,7 +1,7 @@
 import { render } from "preact";
 import { useState, useCallback, useEffect, useRef } from "preact/hooks";
 import { parse } from "../js/api.js";
-import type { Document } from "../js/api";
+import type { Root } from "mdast";
 import { MarkdownRenderer } from "./ast-renderer";
 
 const STORAGE_KEY = "markdown-editor-content";
@@ -117,16 +117,19 @@ function useDarkMode(): [boolean, () => void] {
 
 
 // Find block element at cursor position
-function findBlockAtPosition(ast: Document, position: number): number | null {
+function findBlockAtPosition(ast: Root, position: number): number | null {
   for (let i = 0; i < ast.children.length; i++) {
     const block = ast.children[i]!;
-    if (position >= block.span.from && position <= block.span.to) {
+    const start = block.position?.start?.offset ?? 0;
+    const end = block.position?.end?.offset ?? 0;
+    if (position >= start && position <= end) {
       return i;
     }
   }
   // If position is beyond all blocks, return the last block
   const lastBlock = ast.children[ast.children.length - 1];
-  if (ast.children.length > 0 && lastBlock && position >= lastBlock.span.to) {
+  const lastEnd = lastBlock?.position?.end?.offset ?? 0;
+  if (ast.children.length > 0 && lastBlock && position >= lastEnd) {
     return ast.children.length - 1;
   }
   return null;
@@ -134,7 +137,7 @@ function findBlockAtPosition(ast: Document, position: number): number | null {
 
 function App() {
   const [source, setSource] = useState(initialMarkdown);
-  const [ast, setAst] = useState<Document>(() => parse(initialMarkdown));
+  const [ast, setAst] = useState<Root>(() => parse(initialMarkdown));
   const [cursorPosition, setCursorPosition] = useState(0);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isDark, toggleDark] = useDarkMode();
@@ -220,7 +223,9 @@ function App() {
     if (blockIndex === null) return;
 
     const block = ast.children[blockIndex]!;
-    const selector = `[data-span="${block.span.from}-${block.span.to}"]`;
+    const start = block.position?.start?.offset ?? 0;
+    const end = block.position?.end?.offset ?? 0;
+    const selector = `[data-span="${start}-${end}"]`;
     const element = previewRef.current.querySelector(selector);
 
     if (element) {

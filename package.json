@@ -11,19 +11,25 @@
       "types": "./js/api.d.ts"
     }
   },
-  "keywords": ["markdown", "moonbit"],
+  "keywords": [
+    "markdown",
+    "moonbit"
+  ],
   "author": "mizchi <miz404@gmail.com>",
   "license": "MIT",
   "packageManager": "pnpm@10.23.0",
   "devDependencies": {
+    "@types/mdast": "^4.0.4",
+    "@types/unist": "^3.0.3",
     "preact": "^10.28.0",
     "remark": "^15.0.1",
-    "remark-stringify": "^11.0.0",
     "remark-gfm": "^4.0.1",
     "remark-html": "^16.0.1",
+    "remark-stringify": "^11.0.0",
     "typescript": "^5.9.3",
+    "unified": "^11.0.5",
     "vite": "^7.3.0",
-    "unified": "^11.0.5"
+    "vitest": "^4.0.16"
   },
   "files": [
     "js",

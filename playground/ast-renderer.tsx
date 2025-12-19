@@ -1,124 +1,140 @@
-///| Preact renderer for markdown AST
+///| Preact renderer for mdast AST
 
 import type { ComponentChildren } from "preact";
 import type {
-  Document,
-  Block,
-  Inline,
+  Root,
+  RootContent,
+  PhrasingContent,
   ListItem,
   TableCell,
-  TableAlign,
-} from "../js/api";
+  AlignType,
+} from "mdast";
+import type { Position } from "unist";
+
+// Helper to get position offset for data-span
+function getSpan(node: { position?: Position | undefined }): string {
+  const start = node.position?.start?.offset ?? 0;
+  const end = node.position?.end?.offset ?? 0;
+  return `${start}-${end}`;
+}
 
 // Block renderer
-export function renderBlock(block: Block, key?: string | number): ComponentChildren {
+export function renderBlock(block: RootContent, key?: string | number): ComponentChildren {
   switch (block.type) {
     case "paragraph":
       return (
-        <p key={key} data-span={`${block.span.from}-${block.span.to}`}>
+        <p key={key} data-span={getSpan(block)}>
           {block.children.map((child, i) => renderInline(child, i))}
         </p>
       );
 
     case "heading": {
-      const Tag = `h${block.level}` as "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+      const Tag = `h${block.depth}` as "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
       return (
-        <Tag key={key} data-span={`${block.span.from}-${block.span.to}`}>
+        <Tag key={key} data-span={getSpan(block)}>
           {block.children.map((child, i) => renderInline(child, i))}
         </Tag>
       );
     }
 
-    case "code_block": {
-      const info = block.info ?? "";
-      const lang = info.split(/[:\s]/)[0] ?? "";
+    case "code": {
+      const lang = block.lang ?? "";
       return (
-        <pre key={key} data-span={`${block.span.from}-${block.span.to}`}>
-          <code class={lang ? `language-${lang}` : undefined}>{block.code}</code>
+        <pre key={key} data-span={getSpan(block)}>
+          <code class={lang ? `language-${lang}` : undefined}>{block.value}</code>
         </pre>
       );
     }
 
     case "blockquote":
       return (
-        <blockquote key={key} data-span={`${block.span.from}-${block.span.to}`}>
+        <blockquote key={key} data-span={getSpan(block)}>
           {block.children.map((child, i) => renderBlock(child, i))}
         </blockquote>
       );
 
-    case "bullet_list": {
-      const hasTaskItems = block.items.some((item) => item.checked !== null);
+    case "list": {
+      const hasTaskItems = block.children.some((item) => item.checked != null);
+      if (block.ordered) {
+        return (
+          <ol
+            key={key}
+            start={block.start !== 1 ? block.start ?? undefined : undefined}
+            class={hasTaskItems ? "contains-task-list" : undefined}
+            data-span={getSpan(block)}
+          >
+            {block.children.map((item, i) => renderListItem(item, i))}
+          </ol>
+        );
+      }
       return (
         <ul
           key={key}
           class={hasTaskItems ? "contains-task-list" : undefined}
-          data-span={`${block.span.from}-${block.span.to}`}
+          data-span={getSpan(block)}
         >
-          {block.items.map((item, i) => renderListItem(item, i))}
+          {block.children.map((item, i) => renderListItem(item, i))}
         </ul>
       );
     }
 
-    case "ordered_list":
-      return (
-        <ol
-          key={key}
-          start={block.start !== 1 ? block.start : undefined}
-          data-span={`${block.span.from}-${block.span.to}`}
-        >
-          {block.items.map((item, i) => renderListItem(item, i))}
-        </ol>
-      );
+    case "thematicBreak":
+      return <hr key={key} data-span={getSpan(block)} />;
 
-    case "thematic_break":
-      return <hr key={key} data-span={`${block.span.from}-${block.span.to}`} />;
-
-    case "html_block":
+    case "html":
       return (
         <div
           key={key}
-          data-span={`${block.span.from}-${block.span.to}`}
-          dangerouslySetInnerHTML={{ __html: block.html }}
+          data-span={getSpan(block)}
+          dangerouslySetInnerHTML={{ __html: block.value }}
         />
       );
 
-    case "table":
+    case "table": {
+      const [headerRow, ...bodyRows] = block.children;
+      const align = block.align ?? [];
       return (
-        <table key={key} data-span={`${block.span.from}-${block.span.to}`}>
-          <thead>
-            <tr>
-              {block.header.map((cell, i) =>
-                renderTableCell(cell, i, "th", block.alignments[i])
-              )}
-            </tr>
-          </thead>
-          <tbody>
-            {block.rows.map((row, rowIdx) => (
-              <tr key={rowIdx}>
-                {row.map((cell, i) =>
-                  renderTableCell(cell, i, "td", block.alignments[i])
+        <table key={key} data-span={getSpan(block)}>
+          {headerRow && (
+            <thead>
+              <tr>
+                {headerRow.children.map((cell, i) =>
+                  renderTableCell(cell, i, "th", align[i])
                 )}
               </tr>
-            ))}
-          </tbody>
+            </thead>
+          )}
+          {bodyRows.length > 0 && (
+            <tbody>
+              {bodyRows.map((row, rowIdx) => (
+                <tr key={rowIdx}>
+                  {row.children.map((cell, i) =>
+                    renderTableCell(cell, i, "td", align[i])
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          )}
         </table>
       );
+    }
 
-    case "blank_lines":
-      return null;
-
-    case "footnote_definition":
+    case "footnoteDefinition":
       return (
         <div
           key={key}
           class="footnote-definition"
-          id={`fn-${block.label}`}
-          data-span={`${block.span.from}-${block.span.to}`}
+          id={`fn-${block.identifier}`}
+          data-span={getSpan(block)}
         >
-          <sup>{block.label}</sup>
+          <sup>{block.label ?? block.identifier}</sup>
           {block.children.map((child, i) => renderBlock(child, i))}
         </div>
       );
+
+    case "definition":
+      // Link definitions don't render visually
+      return null;
 
     default:
       return null;
@@ -127,11 +143,11 @@ export function renderBlock(block: Block, key?: string | number): ComponentChild
 
 // List item renderer
 function renderListItem(item: ListItem, key: number): ComponentChildren {
-  const isTask = item.checked !== null;
+  const isTask = item.checked != null;
 
   if (isTask) {
     return (
-      <li key={key} class="task-list-item" data-span={`${item.span.from}-${item.span.to}`}>
+      <li key={key} class="task-list-item" data-span={getSpan(item)}>
         <input type="checkbox" checked={item.checked ?? false} disabled />
         {item.children.map((child, i) => {
           if (child.type === "paragraph") {
@@ -145,7 +161,7 @@ function renderListItem(item: ListItem, key: number): ComponentChildren {
   }
 
   return (
-    <li key={key} data-span={`${item.span.from}-${item.span.to}`}>
+    <li key={key} data-span={getSpan(item)}>
       {item.children.map((child, i) => renderBlock(child, i))}
     </li>
   );
@@ -156,26 +172,27 @@ function renderTableCell(
   cell: TableCell,
   key: number,
   Tag: "th" | "td",
-  align: TableAlign | null | undefined
+  align: AlignType | undefined
 ): ComponentChildren {
   const style = align ? { textAlign: align } : undefined;
   return (
-    <Tag key={key} style={style} data-span={`${cell.span.from}-${cell.span.to}`}>
+    <Tag key={key} style={style} data-span={getSpan(cell)}>
       {cell.children.map((child, i) => renderInline(child, i))}
     </Tag>
   );
 }
 
 // Inline renderer
-export function renderInline(inline: Inline, key?: string | number): ComponentChildren {
+export function renderInline(inline: PhrasingContent, key?: string | number): ComponentChildren {
   switch (inline.type) {
     case "text":
-      return <span key={key}>{inline.content}</span>;
+      // Check for newline (soft break representation)
+      if (inline.value === "\n") {
+        return " ";
+      }
+      return <span key={key}>{inline.value}</span>;
 
-    case "soft_break":
-      return " ";
-
-    case "hard_break":
+    case "break":
       return <br key={key} />;
 
     case "emphasis":
@@ -192,24 +209,24 @@ export function renderInline(inline: Inline, key?: string | number): ComponentCh
         </strong>
       );
 
-    case "strikethrough":
+    case "delete":
       return (
         <del key={key}>
           {inline.children.map((child, i) => renderInline(child, i))}
         </del>
       );
 
-    case "code":
-      return <code key={key}>{inline.content}</code>;
+    case "inlineCode":
+      return <code key={key}>{inline.value}</code>;
 
     case "link":
       return (
-        <a key={key} href={inline.url} title={inline.title || undefined}>
+        <a key={key} href={inline.url} title={inline.title ?? undefined}>
           {inline.children.map((child, i) => renderInline(child, i))}
         </a>
       );
 
-    case "ref_link":
+    case "linkReference":
       // Reference links should be resolved; for now render as text
       return (
         <span key={key}>
@@ -217,38 +234,29 @@ export function renderInline(inline: Inline, key?: string | number): ComponentCh
         </span>
       );
 
-    case "autolink": {
-      const href = inline.is_email ? `mailto:${inline.url}` : inline.url;
-      return (
-        <a key={key} href={href}>
-          {inline.url}
-        </a>
-      );
-    }
-
     case "image":
       return (
         <img
           key={key}
           src={inline.url}
-          alt={inline.alt}
-          title={inline.title || undefined}
+          alt={inline.alt ?? ""}
+          title={inline.title ?? undefined}
         />
       );
 
-    case "ref_image":
+    case "imageReference":
       // Reference images should be resolved; for now render alt text
       return <span key={key}>[{inline.alt}]</span>;
 
-    case "html_inline":
+    case "html":
       return (
-        <span key={key} dangerouslySetInnerHTML={{ __html: inline.html }} />
+        <span key={key} dangerouslySetInnerHTML={{ __html: inline.value }} />
       );
 
-    case "footnote_reference":
+    case "footnoteReference":
       return (
         <sup key={key}>
-          <a href={`#fn-${inline.label}`}>[{inline.label}]</a>
+          <a href={`#fn-${inline.identifier}`}>[{inline.label ?? inline.identifier}]</a>
         </sup>
       );
 
@@ -258,9 +266,9 @@ export function renderInline(inline: Inline, key?: string | number): ComponentCh
 }
 
 // Document renderer component
-export function MarkdownRenderer({ ast }: { ast: Document }) {
+export function MarkdownRenderer({ ast }: { ast: Root }) {
   return (
-    <div class="markdown-body" data-span={`${ast.span.from}-${ast.span.to}`}>
+    <div class="markdown-body" data-span={getSpan(ast)}>
       {ast.children.map((block, i) => renderBlock(block, i))}
     </div>
   );
