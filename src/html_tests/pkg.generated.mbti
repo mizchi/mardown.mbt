@@ -1,0 +1,18 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/markdown/html_tests"
+
+// Values
+pub fn assert_html_compat(String, String) -> Unit
+
+pub fn assert_html_compat_strict(String, String) -> Unit
+
+pub fn remark_html(String) -> String
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits
+

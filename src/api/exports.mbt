@@ -118,10 +118,7 @@ pub fn md_parse_incremental(
         new_end - change_start,
       )
       let inc_result = @markdown.parse_incremental(
-        doc,
-        old_source,
-        new_source,
-        edit,
+        doc, old_source, new_source, edit,
       )
       let new_handle = ast_next_handle.val
       ast_next_handle.val = new_handle + 1

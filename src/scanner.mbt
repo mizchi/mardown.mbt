@@ -46,7 +46,6 @@ pub fn Scanner::new(source : String) -> Scanner {
   } else {
     None // All BMP: code point index == UTF-16 index
   }
-
   { source, chars, pos: 0, len, utf16_offsets }
 }
 
@@ -124,8 +123,20 @@ pub fn Scanner::remaining(self : Scanner) -> String {
 /// Get substring from start to end position (code point indices)
 pub fn Scanner::substring(self : Scanner, start : Int, end : Int) -> String {
   // Clamp indices to valid range
-  let clamped_start = if start < 0 { 0 } else if start > self.len { self.len } else { start }
-  let clamped_end = if end < 0 { 0 } else if end > self.len { self.len } else { end }
+  let clamped_start = if start < 0 {
+    0
+  } else if start > self.len {
+    self.len
+  } else {
+    start
+  }
+  let clamped_end = if end < 0 {
+    0
+  } else if end > self.len {
+    self.len
+  } else {
+    end
+  }
   if clamped_start >= clamped_end {
     ""
   } else {

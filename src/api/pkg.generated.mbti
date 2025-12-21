@@ -1,0 +1,40 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/markdown/api"
+
+import(
+  "mizchi/markdown"
+)
+
+// Values
+pub fn document_to_json(@markdown.Document) -> String
+
+pub fn md_free(Int) -> Unit
+
+pub fn md_free_ast(Int) -> Unit
+
+pub fn md_get_ast(Int) -> String
+
+pub fn md_parse_incremental(Int, String, Int, Int, Int) -> Int
+
+pub fn md_parse_to_ast(String) -> Int
+
+pub fn md_parse_with_source(String) -> Int
+
+pub fn md_render_html(Int) -> String
+
+pub fn md_serialize(Int) -> String
+
+pub fn md_to_ast_json(String) -> String
+
+pub fn md_to_html(String) -> String
+
+pub fn md_to_markdown(String) -> String
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits
+
