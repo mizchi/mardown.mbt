@@ -124,25 +124,27 @@ pub(all) struct JsonToken {
 pub(all) struct JsonTokenizer {
   input : String
   priv chars : Array[Char]
+  priv len : Int
   priv mut pos : Int
 }
 
 ///|
 /// Create a new tokenizer
 pub fn JsonTokenizer::new(input : String) -> JsonTokenizer {
-  { input, chars: input.to_array(), pos: 0 }
+  let chars = input.to_array()
+  { input, chars, len: chars.length(), pos: 0 }
 }
 
 ///|
 /// Check if at end of input
 pub fn JsonTokenizer::at_end(self : JsonTokenizer) -> Bool {
-  self.pos >= self.chars.length()
+  self.pos >= self.len
 }
 
 ///|
-/// Peek current character
+/// Peek current character (inlined for performance)
 pub fn JsonTokenizer::peek(self : JsonTokenizer) -> Char? {
-  if self.pos < self.chars.length() {
+  if self.pos < self.len {
     Some(self.chars[self.pos])
   } else {
     None
@@ -153,7 +155,7 @@ pub fn JsonTokenizer::peek(self : JsonTokenizer) -> Char? {
 /// Peek character at offset
 pub fn JsonTokenizer::peek_at(self : JsonTokenizer, offset : Int) -> Char? {
   let idx = self.pos + offset
-  if idx >= 0 && idx < self.chars.length() {
+  if idx >= 0 && idx < self.len {
     Some(self.chars[idx])
   } else {
     None
@@ -167,12 +169,14 @@ pub fn JsonTokenizer::advance(self : JsonTokenizer) -> Unit {
 }
 
 ///|
-/// Skip whitespace
+/// Skip whitespace (optimized: direct array access)
 pub fn JsonTokenizer::skip_whitespace(self : JsonTokenizer) -> Unit {
-  while not(self.at_end()) {
-    match self.peek() {
-      Some(' ') | Some('\t') | Some('\n') | Some('\r') => self.advance()
-      _ => break
+  while self.pos < self.len {
+    let c = self.chars[self.pos]
+    if c == ' ' || c == '\t' || c == '\n' || c == '\r' {
+      self.pos += 1
+    } else {
+      break
     }
   }
 }
@@ -185,22 +189,22 @@ fn is_digit(c : Char) -> Bool {
 
 ///|
 /// Read a string token (assumes pos is at opening quote)
+/// Optimized: direct array access without Option wrapping
 pub fn JsonTokenizer::read_string(self : JsonTokenizer) -> JsonToken {
   let start = self.pos
-  self.advance() // skip opening quote
-  while not(self.at_end()) {
-    match self.peek() {
-      Some('"') => {
-        self.advance()
-        break
+  self.pos += 1 // skip opening quote
+  while self.pos < self.len {
+    let c = self.chars[self.pos]
+    if c == '"' {
+      self.pos += 1
+      break
+    } else if c == '\\' {
+      self.pos += 1 // skip backslash
+      if self.pos < self.len {
+        self.pos += 1 // skip escaped char
       }
-      Some('\\') => {
-        self.advance() // skip backslash
-        if not(self.at_end()) {
-          self.advance() // skip escaped char
-        }
-      }
-      _ => self.advance()
+    } else {
+      self.pos += 1
     }
   }
   { node_type: String, from: start, to: self.pos }
@@ -208,114 +212,139 @@ pub fn JsonTokenizer::read_string(self : JsonTokenizer) -> JsonToken {
 
 ///|
 /// Read a number token
+/// Optimized: direct array access
 pub fn JsonTokenizer::read_number(self : JsonTokenizer) -> JsonToken {
   let start = self.pos
 
   // Optional minus
-  if self.peek() == Some('-') {
-    self.advance()
+  if self.pos < self.len && self.chars[self.pos] == '-' {
+    self.pos += 1
   }
 
   // Integer part
-  while not(self.at_end()) {
-    match self.peek() {
-      Some(c) if is_digit(c) => self.advance()
-      _ => break
-    }
+  while self.pos < self.len && is_digit(self.chars[self.pos]) {
+    self.pos += 1
   }
 
   // Fractional part
-  if self.peek() == Some('.') {
-    self.advance()
-    while not(self.at_end()) {
-      match self.peek() {
-        Some(c) if is_digit(c) => self.advance()
-        _ => break
-      }
+  if self.pos < self.len && self.chars[self.pos] == '.' {
+    self.pos += 1
+    while self.pos < self.len && is_digit(self.chars[self.pos]) {
+      self.pos += 1
     }
   }
 
   // Exponent part
-  match self.peek() {
-    Some('e') | Some('E') => {
-      self.advance()
-      match self.peek() {
-        Some('+') | Some('-') => self.advance()
-        _ => ()
-      }
-      while not(self.at_end()) {
-        match self.peek() {
-          Some(c) if is_digit(c) => self.advance()
-          _ => break
+  if self.pos < self.len {
+    let c = self.chars[self.pos]
+    if c == 'e' || c == 'E' {
+      self.pos += 1
+      if self.pos < self.len {
+        let sign = self.chars[self.pos]
+        if sign == '+' || sign == '-' {
+          self.pos += 1
         }
       }
+      while self.pos < self.len && is_digit(self.chars[self.pos]) {
+        self.pos += 1
+      }
     }
-    _ => ()
   }
   { node_type: Number, from: start, to: self.pos }
 }
 
 ///|
+/// Match keyword by comparing characters directly (no string allocation)
+fn match_keyword(chars : Array[Char], start : Int, len : Int) -> JsonNodeId {
+  let word_len = len - start
+  if word_len == 4 {
+    // "true" or "null"
+    if chars[start] == 't' &&
+      chars[start + 1] == 'r' &&
+      chars[start + 2] == 'u' &&
+      chars[start + 3] == 'e' {
+      return True
+    }
+    if chars[start] == 'n' &&
+      chars[start + 1] == 'u' &&
+      chars[start + 2] == 'l' &&
+      chars[start + 3] == 'l' {
+      return Null
+    }
+  } else if word_len == 5 {
+    // "false"
+    if chars[start] == 'f' &&
+      chars[start + 1] == 'a' &&
+      chars[start + 2] == 'l' &&
+      chars[start + 3] == 's' &&
+      chars[start + 4] == 'e' {
+      return False
+    }
+  }
+  Error
+}
+
+///|
 /// Read a keyword (true, false, null)
+/// Optimized: no string allocation, direct character comparison
 pub fn JsonTokenizer::read_keyword(self : JsonTokenizer) -> JsonToken {
   let start = self.pos
 
-  // Read word
-  while not(self.at_end()) {
-    match self.peek() {
-      Some(c) if c >= 'a' && c <= 'z' => self.advance()
-      _ => break
+  // Read word (a-z only)
+  while self.pos < self.len {
+    let c = self.chars[self.pos]
+    if c >= 'a' && c <= 'z' {
+      self.pos += 1
+    } else {
+      break
     }
   }
-  let word = self.input.substring(start~, end=self.pos)
-  let node_type = match word {
-    "true" => True
-    "false" => False
-    "null" => Null
-    _ => Error
-  }
+  let node_type = match_keyword(self.chars, start, self.pos)
   { node_type, from: start, to: self.pos }
 }
 
 ///|
 /// Get next token
+/// Optimized: direct character access, inline single-char tokens
 pub fn JsonTokenizer::next_token(self : JsonTokenizer) -> JsonToken? {
   self.skip_whitespace()
-  if self.at_end() {
+  if self.pos >= self.len {
     return None
   }
   let start = self.pos
-  match self.peek() {
-    Some('{') => {
-      self.advance()
+  let c = self.chars[self.pos]
+  match c {
+    '{' => {
+      self.pos += 1
       Some({ node_type: BraceOpen, from: start, to: self.pos })
     }
-    Some('}') => {
-      self.advance()
+    '}' => {
+      self.pos += 1
       Some({ node_type: BraceClose, from: start, to: self.pos })
     }
-    Some('[') => {
-      self.advance()
+    '[' => {
+      self.pos += 1
       Some({ node_type: BracketOpen, from: start, to: self.pos })
     }
-    Some(']') => {
-      self.advance()
+    ']' => {
+      self.pos += 1
       Some({ node_type: BracketClose, from: start, to: self.pos })
     }
-    Some(':') => {
-      self.advance()
+    ':' => {
+      self.pos += 1
       Some({ node_type: Colon, from: start, to: self.pos })
     }
-    Some(',') => {
-      self.advance()
+    ',' => {
+      self.pos += 1
       Some({ node_type: Comma, from: start, to: self.pos })
     }
-    Some('"') => Some(self.read_string())
-    Some('-') => Some(self.read_number())
-    Some(c) if is_digit(c) => Some(self.read_number())
-    Some('t') | Some('f') | Some('n') => Some(self.read_keyword())
+    '"' => Some(self.read_string())
+    '-' => Some(self.read_number())
+    '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' =>
+      Some(self.read_number())
+    't' | 'f' | 'n' => Some(self.read_keyword())
     _ => {
-      self.advance()
+      self.pos += 1
       Some({ node_type: Error, from: start, to: self.pos })
     }
   }
