@@ -136,6 +136,33 @@ function findBlockAtPosition(ast: Root, position: number): number | null {
   return null;
 }
 
+type ViewMode = "split" | "editor" | "preview";
+
+// SVG Icons for view modes
+const SplitIcon = () => (
+  <svg viewBox="0 0 20 20" width="18" height="18" fill="currentColor">
+    <rect x="1" y="2" width="8" height="16" rx="1" stroke="currentColor" strokeWidth="1.5" fill="none" />
+    <rect x="11" y="2" width="8" height="16" rx="1" stroke="currentColor" strokeWidth="1.5" fill="none" />
+  </svg>
+);
+
+const EditorIcon = () => (
+  <svg viewBox="0 0 20 20" width="18" height="18" fill="currentColor">
+    <rect x="2" y="2" width="16" height="16" rx="1" stroke="currentColor" strokeWidth="1.5" fill="none" />
+    <line x1="5" y1="6" x2="15" y2="6" stroke="currentColor" strokeWidth="1.5" />
+    <line x1="5" y1="10" x2="12" y2="10" stroke="currentColor" strokeWidth="1.5" />
+    <line x1="5" y1="14" x2="14" y2="14" stroke="currentColor" strokeWidth="1.5" />
+  </svg>
+);
+
+const PreviewIcon = () => (
+  <svg viewBox="0 0 20 20" width="18" height="18" fill="currentColor">
+    <rect x="2" y="2" width="16" height="16" rx="1" stroke="currentColor" strokeWidth="1.5" fill="none" />
+    <circle cx="10" cy="10" r="3" stroke="currentColor" strokeWidth="1.5" fill="none" />
+    <path d="M4 10 Q7 5, 10 5 Q13 5, 16 10 Q13 15, 10 15 Q7 15, 4 10" stroke="currentColor" strokeWidth="1.5" fill="none" />
+  </svg>
+);
+
 function App() {
   const [source, setSource] = useState(initialMarkdown);
   const [ast, setAst] = useState<Root>(() => parse(initialMarkdown));
@@ -143,9 +170,30 @@ function App() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [isDark, toggleDark] = useDarkMode();
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "idle">("idle");
+  const [viewMode, setViewMode] = useState<ViewMode>("split");
 
   const previewRef = useRef<HTMLDivElement>(null);
   const debouncedSource = useDebounce(source, DEBOUNCE_DELAY);
+
+  // Keyboard shortcuts for view mode
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === "1") {
+          e.preventDefault();
+          setViewMode("split");
+        } else if (e.key === "2") {
+          e.preventDefault();
+          setViewMode("editor");
+        } else if (e.key === "3") {
+          e.preventDefault();
+          setViewMode("preview");
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Load initial content from localStorage or IndexedDB
   useEffect(() => {
@@ -245,10 +293,33 @@ function App() {
   return (
     <div class="app-container">
       <header class="toolbar">
+        <div class="view-mode-buttons">
+          <button
+            class={`view-mode-btn ${viewMode === "split" ? "active" : ""}`}
+            onClick={() => setViewMode("split")}
+            title="Split view (Ctrl+1)"
+          >
+            <SplitIcon />
+          </button>
+          <button
+            class={`view-mode-btn ${viewMode === "editor" ? "active" : ""}`}
+            onClick={() => setViewMode("editor")}
+            title="Editor only (Ctrl+2)"
+          >
+            <EditorIcon />
+          </button>
+          <button
+            class={`view-mode-btn ${viewMode === "preview" ? "active" : ""}`}
+            onClick={() => setViewMode("preview")}
+            title="Preview only (Ctrl+3)"
+          >
+            <PreviewIcon />
+          </button>
+        </div>
         <div class="toolbar-actions">
           <span class={`save-status ${saveStatus}`}>
             {saveStatus === "saving" && "Saving..."}
-            {saveStatus === "saved" && "✓ Saved"}
+            {saveStatus === "saved" && "Saved"}
           </span>
           <button onClick={toggleDark} class="theme-toggle" title="Toggle dark mode">
             {isDark ? "☀️" : "🌙"}
@@ -266,17 +337,21 @@ function App() {
           </a>
         </div>
       </header>
-      <div class="container">
-        <div class="editor">
-          <SyntaxHighlightEditor
-            value={source}
-            onChange={handleChange}
-            onCursorChange={handleCursorChange}
-          />
-        </div>
-        <div class="preview" ref={previewRef}>
-          <MarkdownRenderer ast={ast} />
-        </div>
+      <div class={`container view-${viewMode}`}>
+        {(viewMode === "split" || viewMode === "editor") && (
+          <div class="editor">
+            <SyntaxHighlightEditor
+              value={source}
+              onChange={handleChange}
+              onCursorChange={handleCursorChange}
+            />
+          </div>
+        )}
+        {(viewMode === "split" || viewMode === "preview") && (
+          <div class="preview" ref={previewRef}>
+            <MarkdownRenderer ast={ast} />
+          </div>
+        )}
       </div>
     </div>
   );
