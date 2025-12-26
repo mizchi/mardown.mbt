@@ -1,0 +1,6 @@
+{
+  "import": [
+    { "path": "mizchi/markdown", "alias": "md" },
+    { "path": "mizchi/markdown/slug", "alias": "slug" }
+  ]
+}
