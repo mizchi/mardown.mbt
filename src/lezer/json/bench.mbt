@@ -1,17 +1,21 @@
 ///| Lezer parser benchmarks
+
 ///|
+
 ///| Run with: moon bench --target js -p mizchi/markdown/lezer
 
 // =============================================================================
 // Test Data Generation
 // =============================================================================
 
-///| Generate a simple JSON object
+///|
+/// Generate a simple JSON object
 fn generate_simple_json() -> String {
   "{\"name\": \"test\", \"value\": 42}"
 }
 
-///| Generate a nested JSON object
+///|
+/// Generate a nested JSON object
 fn generate_nested_json(depth : Int) -> String {
   let buf = StringBuilder::new()
   for _i = 0; _i < depth; _i = _i + 1 {
@@ -24,7 +28,8 @@ fn generate_nested_json(depth : Int) -> String {
   buf.to_string()
 }
 
-///| Generate a JSON array with numbers
+///|
+/// Generate a JSON array with numbers
 fn generate_json_array(size : Int) -> String {
   let buf = StringBuilder::new()
   buf.write_string("[")
@@ -38,7 +43,8 @@ fn generate_json_array(size : Int) -> String {
   buf.to_string()
 }
 
-///| Generate a JSON object with many properties
+///|
+/// Generate a JSON object with many properties
 fn generate_json_object(props : Int) -> String {
   let buf = StringBuilder::new()
   buf.write_string("{")
@@ -55,7 +61,8 @@ fn generate_json_object(props : Int) -> String {
   buf.to_string()
 }
 
-///| Generate a complex JSON document
+///|
+/// Generate a complex JSON document
 fn generate_complex_json(size : Int) -> String {
   let buf = StringBuilder::new()
   buf.write_string("{\"items\": [")
@@ -316,7 +323,7 @@ test "tree: resolve 100 positions" (b : @bench.T) {
   b.bench(fn() {
     let mut found = 0
     for i = 0; i < 100; i = i + 1 {
-      let pos = (i * len) / 100
+      let pos = i * len / 100
       match tree.resolve(pos) {
         Some(_) => found += 1
         None => ()
@@ -340,9 +347,11 @@ test "tree: cursor traversal 50 items" (b : @bench.T) {
           n += traverse(c)
         }
         let _ = c.parent()
+
       }
       n
     }
+
     count = traverse(cursor)
     b.keep(count)
   })
@@ -394,10 +403,14 @@ test "highlight: complex 100 items" (b : @bench.T) {
 let tokens_simple : Array[@lezer.HighlightToken] = highlight_json(json_simple)
 
 ///|
-let tokens_object_50 : Array[@lezer.HighlightToken] = highlight_json(json_object_50)
+let tokens_object_50 : Array[@lezer.HighlightToken] = highlight_json(
+  json_object_50,
+)
 
 ///|
-let tokens_complex_50 : Array[@lezer.HighlightToken] = highlight_json(json_complex_50)
+let tokens_complex_50 : Array[@lezer.HighlightToken] = highlight_json(
+  json_complex_50,
+)
 
 ///|
 test "html: simple object" (b : @bench.T) {
@@ -469,7 +482,7 @@ test "treebuffer: push 100 leaves" (b : @bench.T) {
   b.bench(fn() {
     let buffer = @lezer.TreeBuffer::new(types)
     for i = 0; i < 100; i = i + 1 {
-      buffer.push_leaf((i % 2) + 1, i * 10, (i + 1) * 10)
+      buffer.push_leaf(i % 2 + 1, i * 10, (i + 1) * 10)
     }
     b.keep(buffer)
   })
@@ -481,7 +494,7 @@ test "treebuffer: push 1000 leaves" (b : @bench.T) {
   b.bench(fn() {
     let buffer = @lezer.TreeBuffer::new(types)
     for i = 0; i < 1000; i = i + 1 {
-      buffer.push_leaf((i % 2) + 1, i * 10, (i + 1) * 10)
+      buffer.push_leaf(i % 2 + 1, i * 10, (i + 1) * 10)
     }
     b.keep(buffer)
   })
@@ -492,7 +505,7 @@ test "treebuffer: lookup 100x" (b : @bench.T) {
   let types = [@lezer.NodeType::new(1, "A"), @lezer.NodeType::new(2, "B")]
   let buffer = @lezer.TreeBuffer::new(types)
   for i = 0; i < 100; i = i + 1 {
-    buffer.push_leaf((i % 2) + 1, i * 10, (i + 1) * 10)
+    buffer.push_leaf(i % 2 + 1, i * 10, (i + 1) * 10)
   }
   b.bench(fn() {
     let mut found = 0

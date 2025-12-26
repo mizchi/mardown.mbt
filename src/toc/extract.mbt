@@ -27,8 +27,7 @@ fn extract_recursive(blocks : Array[@md.Block], toc : Array[TocItem]) -> Unit {
           let id = @slug.generate_heading_id(text)
           toc.push(TocItem::{ level, text, id })
         }
-      @md.Block::Blockquote(children~, ..) =>
-        extract_recursive(children, toc)
+      @md.Block::Blockquote(children~, ..) => extract_recursive(children, toc)
       @md.Block::BulletList(items~, ..) =>
         for item in items {
           extract_recursive(item.children, toc)
@@ -63,8 +62,7 @@ fn extract_text_recursive(inline : @md.Inline, buf : StringBuilder) -> Unit {
     @md.Inline::Text(content~, ..) => buf.write_string(content)
     @md.Inline::SoftBreak(..) => buf.write_string(" ")
     @md.Inline::HardBreak(..) => buf.write_string("\n")
-    @md.Inline::Emphasis(children~, ..)
-    | @md.Inline::Strong(children~, ..) =>
+    @md.Inline::Emphasis(children~, ..) | @md.Inline::Strong(children~, ..) =>
       for child in children {
         extract_text_recursive(child, buf)
       }
@@ -85,7 +83,6 @@ fn extract_text_recursive(inline : @md.Inline, buf : StringBuilder) -> Unit {
     @md.Inline::Image(alt~, ..) => buf.write_string(alt)
     @md.Inline::RefImage(alt~, ..) => buf.write_string(alt)
     @md.Inline::HtmlInline(..) => () // Skip HTML
-    @md.Inline::FootnoteReference(label~, ..) =>
-      buf.write_string("[^\{label}]")
+    @md.Inline::FootnoteReference(label~, ..) => buf.write_string("[^\{label}]")
   }
 }

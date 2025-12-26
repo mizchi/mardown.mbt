@@ -1,0 +1,28 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/markdown/frontmatter"
+
+import(
+  "mizchi/markdown"
+)
+
+// Values
+pub fn get_bool(@markdown.Frontmatter, String) -> Bool?
+
+pub fn get_int(@markdown.Frontmatter, String) -> Int?
+
+pub fn get_list(@markdown.Frontmatter, String) -> Array[String]
+
+pub fn get_string(@markdown.Frontmatter, String) -> String?
+
+pub fn has_key(@markdown.Frontmatter, String) -> Bool
+
+pub fn keys(@markdown.Frontmatter) -> Array[String]
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits
+

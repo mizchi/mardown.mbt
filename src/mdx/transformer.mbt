@@ -1,7 +1,11 @@
 ///| MDX Transformer
+
 ///|
+
 ///| Provides APIs for transforming MDX documents:
+
 ///| - Strip MDX blocks (imports/exports/JSX)
+
 ///| - Transform specific elements
 
 // =============================================================================
@@ -14,16 +18,13 @@
 pub fn strip_mdx_blocks(doc : @markdown.Document) -> @markdown.Document {
   let mdx_blocks = parse_mdx_blocks(doc)
   let mdx_spans = collect_mdx_spans(mdx_blocks)
-
   let new_children : Array[@markdown.Block] = []
-
   for block in doc.children {
     let block_span = get_block_span(block)
     if not(span_in_list(block_span, mdx_spans)) {
       new_children.push(block)
     }
   }
-
   { frontmatter: doc.frontmatter, children: new_children, span: doc.span }
 }
 
@@ -32,23 +33,19 @@ pub fn strip_mdx_blocks(doc : @markdown.Document) -> @markdown.Document {
 pub fn strip_imports(doc : @markdown.Document) -> @markdown.Document {
   let blocks = parse_mdx_blocks(doc)
   let import_spans : Array[@markdown.Span] = []
-
   for block in blocks {
     match block {
       ImportDecl(span~, ..) => import_spans.push(span)
       _ => ()
     }
   }
-
   let new_children : Array[@markdown.Block] = []
-
   for block in doc.children {
     let block_span = get_block_span(block)
     if not(span_in_list(block_span, import_spans)) {
       new_children.push(block)
     }
   }
-
   { frontmatter: doc.frontmatter, children: new_children, span: doc.span }
 }
 
@@ -57,23 +54,19 @@ pub fn strip_imports(doc : @markdown.Document) -> @markdown.Document {
 pub fn strip_exports(doc : @markdown.Document) -> @markdown.Document {
   let blocks = parse_mdx_blocks(doc)
   let export_spans : Array[@markdown.Span] = []
-
   for block in blocks {
     match block {
       ExportDecl(span~, ..) => export_spans.push(span)
       _ => ()
     }
   }
-
   let new_children : Array[@markdown.Block] = []
-
   for block in doc.children {
     let block_span = get_block_span(block)
     if not(span_in_list(block_span, export_spans)) {
       new_children.push(block)
     }
   }
-
   { frontmatter: doc.frontmatter, children: new_children, span: doc.span }
 }
 
@@ -82,23 +75,19 @@ pub fn strip_exports(doc : @markdown.Document) -> @markdown.Document {
 pub fn strip_jsx_elements(doc : @markdown.Document) -> @markdown.Document {
   let blocks = parse_mdx_blocks(doc)
   let jsx_spans : Array[@markdown.Span] = []
-
   for block in blocks {
     match block {
       JsxElement(span~, ..) => jsx_spans.push(span)
       _ => ()
     }
   }
-
   let new_children : Array[@markdown.Block] = []
-
   for block in doc.children {
     let block_span = get_block_span(block)
     if not(span_in_list(block_span, jsx_spans)) {
       new_children.push(block)
     }
   }
-
   { frontmatter: doc.frontmatter, children: new_children, span: doc.span }
 }
 
@@ -113,27 +102,22 @@ pub fn strip_jsx_elements(doc : @markdown.Document) -> @markdown.Document {
 /// - Non-MDX blocks pass through unchanged
 pub fn transform_mdx(
   doc : @markdown.Document,
-  transformer : (MdxBlock) -> @markdown.Block?
+  transformer : (MdxBlock) -> @markdown.Block?,
 ) -> @markdown.Document {
   let mdx_blocks = parse_mdx_blocks(doc)
   let mdx_map = build_span_to_mdx_map(mdx_blocks)
-
   let new_children : Array[@markdown.Block] = []
-
   for block in doc.children {
     let block_span = get_block_span(block)
-
     match find_mdx_for_span(mdx_map, block_span) {
-      Some(mdx_block) => {
+      Some(mdx_block) =>
         match transformer(mdx_block) {
           Some(new_block) => new_children.push(new_block)
-          None => ()  // Remove the block
+          None => () // Remove the block
         }
-      }
-      None => new_children.push(block)  // Keep non-MDX blocks
+      None => new_children.push(block) // Keep non-MDX blocks
     }
   }
-
   { frontmatter: doc.frontmatter, children: new_children, span: doc.span }
 }
 
@@ -196,7 +180,7 @@ fn build_span_to_mdx_map(blocks : Array[MdxBlock]) -> Array[SpanMdxPair] {
 ///|
 fn find_mdx_for_span(
   pairs : Array[SpanMdxPair],
-  span : @markdown.Span
+  span : @markdown.Span,
 ) -> MdxBlock? {
   for pair in pairs {
     if pair.span.from == span.from && pair.span.to == span.to {
@@ -205,4 +189,3 @@ fn find_mdx_for_span(
   }
   None
 }
-

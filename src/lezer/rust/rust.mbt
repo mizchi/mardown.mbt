@@ -1,5 +1,7 @@
 ///| Rust Tokenizer
+
 ///|
+
 ///| A tokenizer for Rust language syntax highlighting.
 
 // =============================================================================
@@ -10,40 +12,40 @@
 /// Rust token types
 pub(all) enum RustTokenType {
   // Keywords
-  Keyword          // fn, let, mut, const, struct, enum, impl, trait, etc.
-  ControlFlow      // if, else, match, loop, while, for, return, break, continue
+  Keyword // fn, let, mut, const, struct, enum, impl, trait, etc.
+  ControlFlow // if, else, match, loop, while, for, return, break, continue
   // Literals
-  String           // "...", r"...", r#"..."#
-  Char             // 'x'
-  Number           // 123, 0x1F, 0b101, 1.5e10
-  Bool             // true, false
+  String // "...", r"...", r#"..."#
+  Char // 'x'
+  Number // 123, 0x1F, 0b101, 1.5e10
+  Bool // true, false
   // Names
-  Identifier       // variable names, function names
-  TypeName         // Self, String, Vec, Option (uppercase start)
-  Lifetime         // 'a, 'static
+  Identifier // variable names, function names
+  TypeName // Self, String, Vec, Option (uppercase start)
+  Lifetime // 'a, 'static
   // Macros
-  Macro            // println!, vec!, etc.
+  Macro // println!, vec!, etc.
   // Attributes
-  Attribute        // #[derive(Debug)]
+  Attribute // #[derive(Debug)]
   // Operators
-  Operator         // +, -, *, /, =, ==, etc.
-  Arrow            // -> or =>
+  Operator // +, -, *, /, =, ==, etc.
+  Arrow // -> or =>
   // Punctuation
-  BraceOpen        // {
-  BraceClose       // }
-  BracketOpen      // [
-  BracketClose     // ]
-  ParenOpen        // (
-  ParenClose       // )
-  Semicolon        // ;
-  Comma            // ,
-  Dot              // .
-  Colon            // :
-  ColonColon       // ::
+  BraceOpen // {
+  BraceClose // }
+  BracketOpen // [
+  BracketClose // ]
+  ParenOpen // (
+  ParenClose // )
+  Semicolon // ;
+  Comma // ,
+  Dot // .
+  Colon // :
+  ColonColon // ::
   // Comments
-  LineComment      // // ...
-  BlockComment     // /* ... */
-  DocComment       // /// or //!
+  LineComment // // ...
+  BlockComment // /* ... */
+  DocComment // /// or //!
   // Error
   Error
 } derive(Eq, Show)
@@ -56,9 +58,28 @@ pub(all) enum RustTokenType {
 fn is_keyword(word : String) -> Bool {
   match word {
     // Declarations
-    "fn" | "let" | "const" | "static" | "type" | "struct" | "enum" | "union" |
-    "trait" | "impl" | "mod" | "use" | "pub" | "crate" | "super" | "self" |
-    "extern" | "unsafe" | "async" | "await" | "dyn" | "move" => true
+    "fn"
+    | "let"
+    | "const"
+    | "static"
+    | "type"
+    | "struct"
+    | "enum"
+    | "union"
+    | "trait"
+    | "impl"
+    | "mod"
+    | "use"
+    | "pub"
+    | "crate"
+    | "super"
+    | "self"
+    | "extern"
+    | "unsafe"
+    | "async"
+    | "await"
+    | "dyn"
+    | "move" => true
     // Modifiers
     "mut" | "ref" | "in" | "where" => true
     // Other
@@ -70,8 +91,16 @@ fn is_keyword(word : String) -> Bool {
 ///|
 fn is_control_flow(word : String) -> Bool {
   match word {
-    "if" | "else" | "match" | "loop" | "while" | "for" | "return" | "break" |
-    "continue" | "yield" => true
+    "if"
+    | "else"
+    | "match"
+    | "loop"
+    | "while"
+    | "for"
+    | "return"
+    | "break"
+    | "continue"
+    | "yield" => true
     _ => false
   }
 }
@@ -80,12 +109,42 @@ fn is_control_flow(word : String) -> Bool {
 fn is_builtin_type(word : String) -> Bool {
   match word {
     // Primitive types
-    "bool" | "char" | "str" | "u8" | "u16" | "u32" | "u64" | "u128" | "usize" |
-    "i8" | "i16" | "i32" | "i64" | "i128" | "isize" | "f32" | "f64" => true
+    "bool"
+    | "char"
+    | "str"
+    | "u8"
+    | "u16"
+    | "u32"
+    | "u64"
+    | "u128"
+    | "usize"
+    | "i8"
+    | "i16"
+    | "i32"
+    | "i64"
+    | "i128"
+    | "isize"
+    | "f32"
+    | "f64" => true
     // Common types
-    "String" | "Vec" | "Option" | "Result" | "Box" | "Rc" | "Arc" | "Cell" |
-    "RefCell" | "Mutex" | "RwLock" | "HashMap" | "HashSet" | "BTreeMap" |
-    "BTreeSet" | "Cow" | "Pin" | "PhantomData" => true
+    "String"
+    | "Vec"
+    | "Option"
+    | "Result"
+    | "Box"
+    | "Rc"
+    | "Arc"
+    | "Cell"
+    | "RefCell"
+    | "Mutex"
+    | "RwLock"
+    | "HashMap"
+    | "HashSet"
+    | "BTreeMap"
+    | "BTreeSet"
+    | "Cow"
+    | "Pin"
+    | "PhantomData" => true
     _ => false
   }
 }
@@ -180,7 +239,9 @@ fn RustTokenizer::read_string(self : RustTokenizer) -> RustToken {
         if self.chars[self.pos] == '"' {
           self.pos += 1
           let mut closing_hashes = 0
-          while self.pos < self.len && self.chars[self.pos] == '#' && closing_hashes < hash_count {
+          while self.pos < self.len &&
+                self.chars[self.pos] == '#' &&
+                closing_hashes < hash_count {
             closing_hashes += 1
             self.pos += 1
           }
@@ -198,14 +259,14 @@ fn RustTokenizer::read_string(self : RustTokenizer) -> RustToken {
   }
 
   // Regular string "..."
-  self.pos += 1  // skip opening quote
+  self.pos += 1 // skip opening quote
   while self.pos < self.len {
     let c = self.chars[self.pos]
     if c == '"' {
       self.pos += 1
       break
     } else if c == '\\' && self.pos + 1 < self.len {
-      self.pos += 2  // skip escape
+      self.pos += 2 // skip escape
     } else if c == '\n' {
       break
     } else {
@@ -219,7 +280,7 @@ fn RustTokenizer::read_string(self : RustTokenizer) -> RustToken {
 /// Read a character literal
 fn RustTokenizer::read_char(self : RustTokenizer) -> RustToken {
   let start = self.pos
-  self.pos += 1  // skip opening quote
+  self.pos += 1 // skip opening quote
 
   // Check if this is a lifetime 'a instead of char
   if self.pos < self.len && is_ident_start(self.chars[self.pos]) {
@@ -259,7 +320,6 @@ fn RustTokenizer::read_char(self : RustTokenizer) -> RustToken {
 /// Read a number
 fn RustTokenizer::read_number(self : RustTokenizer) -> RustToken {
   let start = self.pos
-
   if self.pos < self.len && self.chars[self.pos] == '0' {
     if self.pos + 1 < self.len {
       let next = self.chars[self.pos + 1]
@@ -356,7 +416,6 @@ fn RustTokenizer::read_number(self : RustTokenizer) -> RustToken {
 
   // Type suffix
   self.read_number_suffix()
-
   { token_type: Number, from: start, to: self.pos }
 }
 
@@ -379,7 +438,6 @@ fn RustTokenizer::read_number_suffix(self : RustTokenizer) -> Unit {
 fn RustTokenizer::read_identifier(self : RustTokenizer) -> RustToken {
   let start = self.pos
   let first_char = self.chars[self.pos]
-
   while self.pos < self.len && is_ident_part(self.chars[self.pos]) {
     self.pos += 1
   }
@@ -389,9 +447,7 @@ fn RustTokenizer::read_identifier(self : RustTokenizer) -> RustToken {
     self.pos += 1
     return { token_type: Macro, from: start, to: self.pos }
   }
-
   let word = self.input.unsafe_substring(start~, end=self.pos)
-
   let token_type = match word {
     "true" | "false" => Bool
     _ if is_control_flow(word) => ControlFlow
@@ -400,7 +456,6 @@ fn RustTokenizer::read_identifier(self : RustTokenizer) -> RustToken {
     _ if is_uppercase(first_char) => TypeName
     _ => Identifier
   }
-
   { token_type, from: start, to: self.pos }
 }
 
@@ -433,7 +488,7 @@ fn RustTokenizer::read_line_comment(self : RustTokenizer) -> RustToken {
 /// Read a block comment
 fn RustTokenizer::read_block_comment(self : RustTokenizer) -> RustToken {
   let start = self.pos
-  self.pos += 2  // skip /*
+  self.pos += 2 // skip /*
 
   // Handle nested comments
   let mut depth = 1
@@ -448,7 +503,6 @@ fn RustTokenizer::read_block_comment(self : RustTokenizer) -> RustToken {
       self.pos += 1
     }
   }
-
   { token_type: BlockComment, from: start, to: self.pos }
 }
 
@@ -456,7 +510,7 @@ fn RustTokenizer::read_block_comment(self : RustTokenizer) -> RustToken {
 /// Read an attribute #[...]
 fn RustTokenizer::read_attribute(self : RustTokenizer) -> RustToken {
   let start = self.pos
-  self.pos += 1  // skip #
+  self.pos += 1 // skip #
 
   // Check for #! (inner attribute)
   if self.pos < self.len && self.chars[self.pos] == '!' {
@@ -477,7 +531,6 @@ fn RustTokenizer::read_attribute(self : RustTokenizer) -> RustToken {
       self.pos += 1
     }
   }
-
   { token_type: Attribute, from: start, to: self.pos }
 }
 
@@ -502,38 +555,36 @@ fn RustTokenizer::read_operator(self : RustTokenizer) -> RustToken {
     let c2 = self.chars[self.pos + 1]
     let c3 = self.chars[self.pos + 2]
     if (c == '<' && c2 == '<' && c3 == '=') ||
-       (c == '>' && c2 == '>' && c3 == '=') ||
-       (c == '.' && c2 == '.' && c3 == '=') ||
-       (c == '.' && c2 == '.' && c3 == '.') {
+      (c == '>' && c2 == '>' && c3 == '=') ||
+      (c == '.' && c2 == '.' && c3 == '=') ||
+      (c == '.' && c2 == '.' && c3 == '.') {
       self.pos += 3
       return { token_type: Operator, from: start, to: self.pos }
     }
   }
-
   if self.pos + 1 < self.len {
     let c2 = self.chars[self.pos + 1]
     if (c == '=' && c2 == '=') ||
-       (c == '!' && c2 == '=') ||
-       (c == '<' && c2 == '=') ||
-       (c == '>' && c2 == '=') ||
-       (c == '+' && c2 == '=') ||
-       (c == '-' && c2 == '=') ||
-       (c == '*' && c2 == '=') ||
-       (c == '/' && c2 == '=') ||
-       (c == '%' && c2 == '=') ||
-       (c == '&' && c2 == '&') ||
-       (c == '|' && c2 == '|') ||
-       (c == '&' && c2 == '=') ||
-       (c == '|' && c2 == '=') ||
-       (c == '^' && c2 == '=') ||
-       (c == '<' && c2 == '<') ||
-       (c == '>' && c2 == '>') ||
-       (c == '.' && c2 == '.') {
+      (c == '!' && c2 == '=') ||
+      (c == '<' && c2 == '=') ||
+      (c == '>' && c2 == '=') ||
+      (c == '+' && c2 == '=') ||
+      (c == '-' && c2 == '=') ||
+      (c == '*' && c2 == '=') ||
+      (c == '/' && c2 == '=') ||
+      (c == '%' && c2 == '=') ||
+      (c == '&' && c2 == '&') ||
+      (c == '|' && c2 == '|') ||
+      (c == '&' && c2 == '=') ||
+      (c == '|' && c2 == '=') ||
+      (c == '^' && c2 == '=') ||
+      (c == '<' && c2 == '<') ||
+      (c == '>' && c2 == '>') ||
+      (c == '.' && c2 == '.') {
       self.pos += 2
       return { token_type: Operator, from: start, to: self.pos }
     }
   }
-
   self.pos += 1
   { token_type: Operator, from: start, to: self.pos }
 }
@@ -542,11 +593,9 @@ fn RustTokenizer::read_operator(self : RustTokenizer) -> RustToken {
 /// Get next token
 pub fn RustTokenizer::next_token(self : RustTokenizer) -> RustToken? {
   self.skip_whitespace()
-
   if self.pos >= self.len {
     return None
   }
-
   let start = self.pos
   let c = self.chars[self.pos]
 
@@ -577,14 +626,13 @@ pub fn RustTokenizer::next_token(self : RustTokenizer) -> RustToken? {
   if c == 'b' && self.pos + 1 < self.len {
     let next = self.chars[self.pos + 1]
     if next == '"' {
-      self.pos += 1  // skip 'b'
+      self.pos += 1 // skip 'b'
       return Some(self.read_string())
     } else if next == '\'' {
-      self.pos += 1  // skip 'b'
+      self.pos += 1 // skip 'b'
       return Some(self.read_char())
     }
   }
-
   let token = match c {
     '"' => self.read_string()
     '\'' => self.read_char()
@@ -623,7 +671,7 @@ pub fn RustTokenizer::next_token(self : RustTokenizer) -> RustToken? {
       self.pos += 1
       { token_type: Comma, from: start, to: self.pos }
     }
-    ':' => {
+    ':' =>
       if self.pos + 1 < self.len && self.chars[self.pos + 1] == ':' {
         self.pos += 2
         { token_type: ColonColon, from: start, to: self.pos }
@@ -631,8 +679,7 @@ pub fn RustTokenizer::next_token(self : RustTokenizer) -> RustToken? {
         self.pos += 1
         { token_type: Colon, from: start, to: self.pos }
       }
-    }
-    '.' => {
+    '.' =>
       // Check for range operators
       if self.pos + 1 < self.len && self.chars[self.pos + 1] == '.' {
         self.read_operator()
@@ -640,16 +687,26 @@ pub fn RustTokenizer::next_token(self : RustTokenizer) -> RustToken? {
         self.pos += 1
         { token_type: Dot, from: start, to: self.pos }
       }
-    }
-    '+' | '-' | '*' | '/' | '%' | '=' | '!' | '<' | '>' | '&' | '|' | '^' |
-    '~' | '?' | '@' =>
-      self.read_operator()
+    '+'
+    | '-'
+    | '*'
+    | '/'
+    | '%'
+    | '='
+    | '!'
+    | '<'
+    | '>'
+    | '&'
+    | '|'
+    | '^'
+    | '~'
+    | '?'
+    | '@' => self.read_operator()
     _ => {
       self.pos += 1
       { token_type: Error, from: start, to: self.pos }
     }
   }
-
   Some(token)
 }
 

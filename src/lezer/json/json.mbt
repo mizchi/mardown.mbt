@@ -530,7 +530,11 @@ pub fn JsonParser::parse_property(self : JsonParser) -> @lezer.Tree? {
 
   // Property name (different from regular string for highlighting)
   children.push(
-    @lezer.Tree::leaf(json_node_type(PropertyName), key_token.from, key_token.to),
+    @lezer.Tree::leaf(
+      json_node_type(PropertyName),
+      key_token.from,
+      key_token.to,
+    ),
   )
 
   // Colon
@@ -538,7 +542,11 @@ pub fn JsonParser::parse_property(self : JsonParser) -> @lezer.Tree? {
   match colon {
     Some(colon_token) =>
       children.push(
-        @lezer.Tree::leaf(json_node_type(Colon), colon_token.from, colon_token.to),
+        @lezer.Tree::leaf(
+          json_node_type(Colon),
+          colon_token.from,
+          colon_token.to,
+        ),
       )
     None => ()
   }
@@ -566,7 +574,11 @@ pub fn JsonParser::parse_array(self : JsonParser) -> @lezer.Tree? {
 
   // Add opening bracket as child
   children.push(
-    @lezer.Tree::leaf(json_node_type(BracketOpen), open_token.from, open_token.to),
+    @lezer.Tree::leaf(
+      json_node_type(BracketOpen),
+      open_token.from,
+      open_token.to,
+    ),
   )
 
   // Parse elements
@@ -622,7 +634,9 @@ pub fn JsonParser::parse(self : JsonParser) -> @lezer.Tree? {
   let value = self.parse_value()
   match value {
     Some(v) =>
-      Some(@lezer.Tree::node(json_node_type(JsonDocument), v.from(), v.to(), [v]))
+      Some(
+        @lezer.Tree::node(json_node_type(JsonDocument), v.from(), v.to(), [v]),
+      )
     None => None
   }
 }

@@ -4,20 +4,25 @@
 // Test Data Generation
 // =============================================================================
 
-///| Generate simple TypeScript code
+///|
+/// Generate simple TypeScript code
 fn generate_simple_ts() -> String {
   "const x = 42;"
 }
 
-///| Generate function with body
+///|
+/// Generate function with body
 fn generate_function_ts() -> String {
-  #|function fibonacci(n: number): number {
-  #|  if (n <= 1) return n;
-  #|  return fibonacci(n - 1) + fibonacci(n - 2);
-  #|}
+  let s =
+    #|function fibonacci(n: number): number {
+    #|  if (n <= 1) return n;
+    #|  return fibonacci(n - 1) + fibonacci(n - 2);
+    #|}
+  s
 }
 
-///| Generate class with methods
+///|
+/// Generate class with methods
 fn generate_class_ts(methods : Int) -> String {
   let buf = StringBuilder::new()
   buf.write_string("class MyClass {\n")
@@ -32,7 +37,8 @@ fn generate_class_ts(methods : Int) -> String {
   buf.to_string()
 }
 
-///| Generate JSX component
+///|
+/// Generate JSX component
 fn generate_jsx_ts(elements : Int) -> String {
   let buf = StringBuilder::new()
   buf.write_string("const App = () => {\n")
@@ -51,7 +57,8 @@ fn generate_jsx_ts(elements : Int) -> String {
   buf.to_string()
 }
 
-///| Generate imports
+///|
+/// Generate imports
 fn generate_imports_ts(count : Int) -> String {
   let buf = StringBuilder::new()
   for i = 0; i < count; i = i + 1 {
@@ -65,19 +72,36 @@ fn generate_imports_ts(count : Int) -> String {
 }
 
 // Pre-generate test data
+
+///|
 let ts_simple : String = generate_simple_ts()
+
+///|
 let ts_function : String = generate_function_ts()
+
+///|
 let ts_class_10 : String = generate_class_ts(10)
+
+///|
 let ts_class_50 : String = generate_class_ts(50)
+
+///|
 let ts_jsx_10 : String = generate_jsx_ts(10)
+
+///|
 let ts_jsx_50 : String = generate_jsx_ts(50)
+
+///|
 let ts_imports_20 : String = generate_imports_ts(20)
+
+///|
 let ts_imports_100 : String = generate_imports_ts(100)
 
 // =============================================================================
 // Tokenizer Benchmarks
 // =============================================================================
 
+///|
 test "tokenize: simple" (b : @bench.T) {
   b.bench(fn() {
     let tokenizer = TsTokenizer::new(ts_simple)
@@ -86,6 +110,7 @@ test "tokenize: simple" (b : @bench.T) {
   })
 }
 
+///|
 test "tokenize: function" (b : @bench.T) {
   b.bench(fn() {
     let tokenizer = TsTokenizer::new(ts_function)
@@ -94,6 +119,7 @@ test "tokenize: function" (b : @bench.T) {
   })
 }
 
+///|
 test "tokenize: class 10 methods" (b : @bench.T) {
   b.bench(fn() {
     let tokenizer = TsTokenizer::new(ts_class_10)
@@ -102,6 +128,7 @@ test "tokenize: class 10 methods" (b : @bench.T) {
   })
 }
 
+///|
 test "tokenize: class 50 methods" (b : @bench.T) {
   b.bench(fn() {
     let tokenizer = TsTokenizer::new(ts_class_50)
@@ -110,6 +137,7 @@ test "tokenize: class 50 methods" (b : @bench.T) {
   })
 }
 
+///|
 test "tokenize: jsx 10 elements" (b : @bench.T) {
   b.bench(fn() {
     let tokenizer = TsTokenizer::new(ts_jsx_10)
@@ -118,6 +146,7 @@ test "tokenize: jsx 10 elements" (b : @bench.T) {
   })
 }
 
+///|
 test "tokenize: jsx 50 elements" (b : @bench.T) {
   b.bench(fn() {
     let tokenizer = TsTokenizer::new(ts_jsx_50)
@@ -126,6 +155,7 @@ test "tokenize: jsx 50 elements" (b : @bench.T) {
   })
 }
 
+///|
 test "tokenize: imports 20" (b : @bench.T) {
   b.bench(fn() {
     let tokenizer = TsTokenizer::new(ts_imports_20)
@@ -134,6 +164,7 @@ test "tokenize: imports 20" (b : @bench.T) {
   })
 }
 
+///|
 test "tokenize: imports 100" (b : @bench.T) {
   b.bench(fn() {
     let tokenizer = TsTokenizer::new(ts_imports_100)
@@ -146,6 +177,7 @@ test "tokenize: imports 100" (b : @bench.T) {
 // Highlight Benchmarks
 // =============================================================================
 
+///|
 test "highlight: simple" (b : @bench.T) {
   b.bench(fn() {
     let result = highlight_typescript(ts_simple)
@@ -153,6 +185,7 @@ test "highlight: simple" (b : @bench.T) {
   })
 }
 
+///|
 test "highlight: function" (b : @bench.T) {
   b.bench(fn() {
     let result = highlight_typescript(ts_function)
@@ -160,6 +193,7 @@ test "highlight: function" (b : @bench.T) {
   })
 }
 
+///|
 test "highlight: class 10 methods" (b : @bench.T) {
   b.bench(fn() {
     let result = highlight_typescript(ts_class_10)
@@ -167,6 +201,7 @@ test "highlight: class 10 methods" (b : @bench.T) {
   })
 }
 
+///|
 test "highlight: class 50 methods" (b : @bench.T) {
   b.bench(fn() {
     let result = highlight_typescript(ts_class_50)
@@ -174,6 +209,7 @@ test "highlight: class 50 methods" (b : @bench.T) {
   })
 }
 
+///|
 test "highlight: jsx 10 elements" (b : @bench.T) {
   b.bench(fn() {
     let result = highlight_typescript(ts_jsx_10)
@@ -181,6 +217,7 @@ test "highlight: jsx 10 elements" (b : @bench.T) {
   })
 }
 
+///|
 test "highlight: jsx 50 elements" (b : @bench.T) {
   b.bench(fn() {
     let result = highlight_typescript(ts_jsx_50)
@@ -192,6 +229,7 @@ test "highlight: jsx 50 elements" (b : @bench.T) {
 // End-to-end Benchmarks
 // =============================================================================
 
+///|
 test "e2e: simple" (b : @bench.T) {
   b.bench(fn() {
     let result = highlight_typescript_to_html(ts_simple)
@@ -199,6 +237,7 @@ test "e2e: simple" (b : @bench.T) {
   })
 }
 
+///|
 test "e2e: function" (b : @bench.T) {
   b.bench(fn() {
     let result = highlight_typescript_to_html(ts_function)
@@ -206,6 +245,7 @@ test "e2e: function" (b : @bench.T) {
   })
 }
 
+///|
 test "e2e: class 50 methods" (b : @bench.T) {
   b.bench(fn() {
     let result = highlight_typescript_to_html(ts_class_50)
@@ -213,6 +253,7 @@ test "e2e: class 50 methods" (b : @bench.T) {
   })
 }
 
+///|
 test "e2e: jsx 50 elements" (b : @bench.T) {
   b.bench(fn() {
     let result = highlight_typescript_to_html(ts_jsx_50)

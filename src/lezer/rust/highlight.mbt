@@ -51,7 +51,6 @@ pub fn rust_highlighter() -> @lezer.Highlighter {
   h.add_rule("LineComment", Comment)
   h.add_rule("BlockComment", Comment)
   h.add_rule("DocComment", DocComment)
-
   h
 }
 
@@ -97,7 +96,6 @@ pub fn highlight_rust(source : String) -> Array[@lezer.HighlightToken] {
   let tokens = tokenizer.tokenize_all()
   let highlighter = rust_highlighter()
   let result : Array[@lezer.HighlightToken] = []
-
   for token in tokens {
     let name = token_type_name(token.token_type)
     let tag = highlighter.get_tag(name)

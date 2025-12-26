@@ -1,8 +1,13 @@
 ///| MDX Block Parser
+
 ///|
+
 ///| Parses MDX block-level elements:
+
 ///| - Import declarations
+
 ///| - Export declarations
+
 ///| - JSX/Web Component elements
 
 // =============================================================================
@@ -14,24 +19,21 @@
 /// Returns array of MDX blocks found in the document
 pub fn parse_mdx_blocks(doc : @markdown.Document) -> Array[MdxBlock] {
   let blocks : Array[MdxBlock] = []
-
   for block in doc.children {
     let mdx_blocks = try_parse_mdx_blocks_from_block(block)
     for mdx in mdx_blocks {
       blocks.push(mdx)
     }
   }
-
   blocks
 }
 
 ///|
 /// Try to parse a single block as MDX blocks (may return multiple blocks for multi-line paragraphs)
 pub fn try_parse_mdx_blocks_from_block(
-  block : @markdown.Block
+  block : @markdown.Block,
 ) -> Array[MdxBlock] {
   let result : Array[MdxBlock] = []
-
   match block {
     @markdown.Block::Paragraph(children~, span~, ..) => {
       // Get the raw text content of the paragraph
@@ -39,7 +41,6 @@ pub fn try_parse_mdx_blocks_from_block(
 
       // Split by newlines to handle multiple statements
       let lines = split_lines(content)
-
       for line in lines {
         let trimmed = line.trim_start()
 
@@ -70,16 +71,14 @@ pub fn try_parse_mdx_blocks_from_block(
         }
       }
     }
-    @markdown.Block::HtmlBlock(html~, span~, ..) => {
+    @markdown.Block::HtmlBlock(html~, span~, ..) =>
       // HTML blocks might be JSX
       match try_parse_jsx_element(html, span) {
         Some(mdx) => result.push(mdx)
         None => ()
       }
-    }
     _ => ()
   }
-
   result
 }
 
@@ -90,7 +89,6 @@ fn split_lines(s : String) -> Array[String] {
   let chars = s.to_array()
   let len = chars.length()
   let buf = StringBuilder::new()
-
   for i = 0; i < len; i = i + 1 {
     if chars[i] == '\n' {
       lines.push(buf.to_string())
@@ -105,7 +103,6 @@ fn split_lines(s : String) -> Array[String] {
   if last.length() > 0 {
     lines.push(last)
   }
-
   lines
 }
 
@@ -150,13 +147,11 @@ fn try_parse_import(content : String, span : @markdown.Span) -> MdxBlock? {
   while pos < len && is_whitespace(chars[pos]) {
     pos += 1
   }
-
   let specifiers : Array[ImportSpecifier] = []
 
   // Parse specifiers
   if pos < len {
     let c = chars[pos]
-
     if c == '{' {
       // Named imports: { X, Y as Z }
       pos += 1
@@ -232,27 +227,25 @@ fn try_parse_import(content : String, span : @markdown.Span) -> MdxBlock? {
   if source.is_empty() {
     return None
   }
-
-  Some(
-    MdxBlock::ImportDecl(specifiers~, source~, span~, raw=content),
-  )
+  Some(MdxBlock::ImportDecl(specifiers~, source~, span~, raw=content))
 }
 
 ///|
 /// Parse named imports: X, Y as Z, ...
-fn parse_named_imports(chars : Array[Char], start : Int) -> (Array[ImportSpecifier], Int) {
+fn parse_named_imports(
+  chars : Array[Char],
+  start : Int,
+) -> (Array[ImportSpecifier], Int) {
   let specs : Array[ImportSpecifier] = []
   let len = chars.length()
   let mut pos = start
-
   while pos < len {
     // Skip whitespace
     while pos < len && is_whitespace(chars[pos]) {
       pos += 1
     }
-
     if pos >= len || chars[pos] == '}' {
-      pos += 1  // Skip }
+      pos += 1 // Skip }
       break
     }
 
@@ -296,7 +289,6 @@ fn parse_named_imports(chars : Array[Char], start : Int) -> (Array[ImportSpecifi
       pos += 1
     }
   }
-
   (specs, pos)
 }
 
@@ -317,7 +309,6 @@ priv struct ExportInfo {
 fn parse_export_kind(chars : Array[Char], start_pos : Int) -> ExportInfo {
   let len = chars.length()
   let mut pos = start_pos
-
   if matches_keyword(chars, pos, "default") {
     pos += 7
     while pos < len && is_whitespace(chars[pos]) {
@@ -325,7 +316,6 @@ fn parse_export_kind(chars : Array[Char], start_pos : Int) -> ExportInfo {
     }
     return { kind: ExportKind::Default, name: None, value_start: pos }
   }
-
   if matches_keyword(chars, pos, "const") {
     pos += 5
     while pos < len && is_whitespace(chars[pos]) {
@@ -345,7 +335,6 @@ fn parse_export_kind(chars : Array[Char], start_pos : Int) -> ExportInfo {
     }
     return { kind: ExportKind::Const, name, value_start: pos }
   }
-
   if matches_keyword(chars, pos, "let") {
     pos += 3
     while pos < len && is_whitespace(chars[pos]) {
@@ -365,7 +354,6 @@ fn parse_export_kind(chars : Array[Char], start_pos : Int) -> ExportInfo {
     }
     return { kind: ExportKind::Let, name, value_start: pos }
   }
-
   if matches_keyword(chars, pos, "function") {
     pos += 8
     while pos < len && is_whitespace(chars[pos]) {
@@ -408,7 +396,6 @@ fn try_parse_export(content : String, span : @markdown.Span) -> MdxBlock? {
 
   // Get the value (rest of the content)
   let value = substring(chars, info.value_start, len).trim_end().to_string()
-
   Some(
     MdxBlock::ExportDecl(
       kind=info.kind,
@@ -452,11 +439,9 @@ fn try_parse_jsx_element(content : String, span : @markdown.Span) -> MdxBlock? {
   while pos < len && is_tag_name_char(chars[pos]) {
     pos += 1
   }
-
   if pos == tag_start {
     return None
   }
-
   let tag = substring(chars, tag_start, pos)
 
   // Check if this is a JSX component or Web Component
@@ -500,10 +485,7 @@ fn try_parse_jsx_element(content : String, span : @markdown.Span) -> MdxBlock? {
       substring(chars, children_start, len)
     }
   }
-
-  Some(
-    MdxBlock::JsxElement(tag~, attributes~, children~, self_closing~, span~),
-  )
+  Some(MdxBlock::JsxElement(tag~, attributes~, children~, self_closing~, span~))
 }
 
 ///|
@@ -514,10 +496,8 @@ fn find_closing_tag(content : String, start : Int, tag : String) -> Int {
   let closing_chars = closing.to_array()
   let len = chars.length()
   let closing_len = closing_chars.length()
-
   let mut pos = start
   let mut depth = 1
-
   while pos < len {
     // Check for opening tag (increase depth)
     if chars[pos] == '<' && pos + 1 < len && chars[pos + 1] != '/' {
@@ -548,10 +528,8 @@ fn find_closing_tag(content : String, start : Int, tag : String) -> Int {
         }
       }
     }
-
     pos += 1
   }
-
   -1
 }
 
@@ -579,7 +557,7 @@ fn get_paragraph_text(children : Array[@markdown.Inline]) -> String {
       }
       @markdown.Inline::SoftBreak(..) => buf.write_char('\n')
       @markdown.Inline::HardBreak(..) => buf.write_char('\n')
-      _ => ()  // Skip other inline elements for now
+      _ => () // Skip other inline elements for now
     }
   }
   buf.to_string()
@@ -609,11 +587,9 @@ fn is_tag_name_char(c : Char) -> Bool {
 fn matches_keyword(chars : Array[Char], pos : Int, keyword : String) -> Bool {
   let kw_chars = keyword.to_array()
   let kw_len = kw_chars.length()
-
   if pos + kw_len > chars.length() {
     return false
   }
-
   for i = 0; i < kw_len; i = i + 1 {
     if chars[pos + i] != kw_chars[i] {
       return false
@@ -624,7 +600,6 @@ fn matches_keyword(chars : Array[Char], pos : Int, keyword : String) -> Bool {
   if pos + kw_len < chars.length() && is_ident_char(chars[pos + kw_len]) {
     return false
   }
-
   true
 }
 
@@ -632,15 +607,12 @@ fn matches_keyword(chars : Array[Char], pos : Int, keyword : String) -> Bool {
 fn parse_identifier(chars : Array[Char], start : Int) -> (String, Int) {
   let len = chars.length()
   let mut pos = start
-
   if pos >= len || not(is_ident_start(chars[pos])) {
     return ("", pos)
   }
-
   while pos < len && is_ident_char(chars[pos]) {
     pos += 1
   }
-
   (substring(chars, start, pos), pos)
 }
 
@@ -648,19 +620,15 @@ fn parse_identifier(chars : Array[Char], start : Int) -> (String, Int) {
 fn parse_string_literal(chars : Array[Char], start : Int) -> String {
   let len = chars.length()
   let mut pos = start
-
   if pos >= len {
     return ""
   }
-
   let quote = chars[pos]
   if quote != '"' && quote != '\'' {
     return ""
   }
-
   pos += 1
   let value_start = pos
-
   while pos < len && chars[pos] != quote {
     if chars[pos] == '\\' && pos + 1 < len {
       pos += 2
@@ -668,7 +636,6 @@ fn parse_string_literal(chars : Array[Char], start : Int) -> String {
       pos += 1
     }
   }
-
   substring(chars, value_start, pos)
 }
 

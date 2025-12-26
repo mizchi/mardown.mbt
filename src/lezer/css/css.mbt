@@ -8,42 +8,42 @@
 /// CSS token types
 pub(all) enum CssTokenType {
   // Selectors
-  TagSelector     // div, span, body
-  ClassSelector   // .classname
-  IdSelector      // #idname
-  PseudoClass     // :hover, :first-child
-  PseudoElement   // ::before, ::after
-  AttrSelector    // [attr], [attr="value"]
+  TagSelector // div, span, body
+  ClassSelector // .classname
+  IdSelector // #idname
+  PseudoClass // :hover, :first-child
+  PseudoElement // ::before, ::after
+  AttrSelector // [attr], [attr="value"]
   UniversalSelector // *
-  Combinator      // >, +, ~, space
+  Combinator // >, +, ~, space
 
   // At-rules
-  AtKeyword       // @media, @keyframes, @import
+  AtKeyword // @media, @keyframes, @import
 
   // Properties and values
-  PropertyName    // color, background-color
-  PropertyValue   // red, 10px, #fff
-  Number          // 10, 3.14
-  Unit            // px, em, %, rem
-  Color           // #fff, #ffffff
-  String          // "string" or 'string'
-  Url             // url(...)
-  Function        // rgb(), calc()
-  Important       // !important
+  PropertyName // color, background-color
+  PropertyValue // red, 10px, #fff
+  Number // 10, 3.14
+  Unit // px, em, %, rem
+  Color // #fff, #ffffff
+  String // "string" or 'string'
+  Url // url(...)
+  Function // rgb(), calc()
+  Important // !important
 
   // Punctuation
-  BraceOpen       // {
-  BraceClose      // }
-  ParenOpen       // (
-  ParenClose      // )
-  BracketOpen     // [
-  BracketClose    // ]
-  Colon           // :
-  Semicolon       // ;
-  Comma           // ,
+  BraceOpen // {
+  BraceClose // }
+  ParenOpen // (
+  ParenClose // )
+  BracketOpen // [
+  BracketClose // ]
+  Colon // :
+  Semicolon // ;
+  Comma // ,
 
   // Comments
-  Comment         // /* ... */
+  Comment // /* ... */
 
   // Error
   Error
@@ -81,7 +81,14 @@ pub(all) struct CssTokenizer {
 /// Create a new CSS tokenizer
 pub fn CssTokenizer::new(input : String) -> CssTokenizer {
   let chars = input.to_array()
-  { input, chars, len: chars.length(), pos: 0, in_block: false, after_colon: false }
+  {
+    input,
+    chars,
+    len: chars.length(),
+    pos: 0,
+    in_block: false,
+    after_colon: false,
+  }
 }
 
 ///|
@@ -92,7 +99,7 @@ pub fn CssTokenizer::at_end(self : CssTokenizer) -> Bool {
 
 ///|
 /// Peek current character
-fn CssTokenizer::peek(self : CssTokenizer) -> Char? {
+fn CssTokenizer::_peek(self : CssTokenizer) -> Char? {
   if self.pos < self.len {
     Some(self.chars[self.pos])
   } else {
@@ -130,10 +137,7 @@ fn is_ident_char(c : Char) -> Bool {
 ///|
 /// Check if character starts an identifier
 fn is_ident_start(c : Char) -> Bool {
-  (c >= 'a' && c <= 'z') ||
-  (c >= 'A' && c <= 'Z') ||
-  c == '_' ||
-  c == '-'
+  (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_' || c == '-'
 }
 
 ///|
@@ -145,9 +149,7 @@ fn is_digit(c : Char) -> Bool {
 ///|
 /// Check if character is hex digit
 fn is_hex_digit(c : Char) -> Bool {
-  (c >= '0' && c <= '9') ||
-  (c >= 'a' && c <= 'f') ||
-  (c >= 'A' && c <= 'F')
+  (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')
 }
 
 ///|
@@ -163,7 +165,6 @@ fn CssTokenizer::skip_whitespace(self : CssTokenizer) -> Unit {
 fn CssTokenizer::read_comment(self : CssTokenizer) -> CssToken {
   let start = self.pos
   self.pos += 2 // skip /*
-
   while self.pos + 1 < self.len {
     if self.chars[self.pos] == '*' && self.chars[self.pos + 1] == '/' {
       self.pos += 2
@@ -171,7 +172,6 @@ fn CssTokenizer::read_comment(self : CssTokenizer) -> CssToken {
     }
     self.pos += 1
   }
-
   { token_type: Comment, from: start, to: self.pos }
 }
 
@@ -191,7 +191,6 @@ fn CssTokenizer::read_string(self : CssTokenizer) -> CssToken {
   let start = self.pos
   let quote = self.chars[self.pos]
   self.pos += 1
-
   while self.pos < self.len {
     let c = self.chars[self.pos]
     if c == quote {
@@ -203,7 +202,6 @@ fn CssTokenizer::read_string(self : CssTokenizer) -> CssToken {
       self.pos += 1
     }
   }
-
   { token_type: String, from: start, to: self.pos }
 }
 
@@ -226,7 +224,6 @@ fn CssTokenizer::read_number(self : CssTokenizer) -> CssToken {
       }
     }
   }
-
   { token_type: Number, from: start, to: self.pos }
 }
 
@@ -235,11 +232,9 @@ fn CssTokenizer::read_number(self : CssTokenizer) -> CssToken {
 fn CssTokenizer::read_color(self : CssTokenizer) -> CssToken {
   let start = self.pos
   self.pos += 1 // skip #
-
   while self.pos < self.len && is_hex_digit(self.chars[self.pos]) {
     self.pos += 1
   }
-
   { token_type: Color, from: start, to: self.pos }
 }
 
@@ -258,7 +253,6 @@ fn CssTokenizer::read_unit(self : CssTokenizer) -> CssToken {
   while self.pos < self.len && is_ident_char(self.chars[self.pos]) {
     self.pos += 1
   }
-
   { token_type: Unit, from: start, to: self.pos }
 }
 
@@ -309,7 +303,6 @@ fn CssTokenizer::read_url(self : CssTokenizer) -> CssToken {
   if self.pos < self.len && self.chars[self.pos] == ')' {
     self.pos += 1
   }
-
   { token_type: Url, from: start, to: self.pos }
 }
 
@@ -329,13 +322,11 @@ fn CssTokenizer::is_url(self : CssTokenizer) -> Bool {
 /// Tokenize the entire input
 pub fn CssTokenizer::tokenize_all(self : CssTokenizer) -> Array[CssToken] {
   let tokens : Array[CssToken] = []
-
   while self.pos < self.len {
     self.skip_whitespace()
     if self.pos >= self.len {
       break
     }
-
     let c = self.chars[self.pos]
 
     // Comment
@@ -502,7 +493,8 @@ pub fn CssTokenizer::tokenize_all(self : CssTokenizer) -> Array[CssToken] {
     }
 
     // Number
-    if is_digit(c) || (c == '.' && self.peek_at(1).map(is_digit).unwrap_or(false)) {
+    if is_digit(c) ||
+      (c == '.' && self.peek_at(1).map(is_digit).unwrap_or(false)) {
       tokens.push(self.read_number())
       // Check for unit
       if self.pos < self.len {
@@ -540,7 +532,6 @@ pub fn CssTokenizer::tokenize_all(self : CssTokenizer) -> Array[CssToken] {
         tokens.push(self.read_url())
         continue
       }
-
       let (start, end) = self.read_ident()
 
       // Check if followed by ( for function
@@ -548,7 +539,6 @@ pub fn CssTokenizer::tokenize_all(self : CssTokenizer) -> Array[CssToken] {
         tokens.push({ token_type: Function, from: start, to: end })
         continue
       }
-
       if self.in_block {
         if self.after_colon {
           tokens.push({ token_type: PropertyValue, from: start, to: end })
@@ -566,6 +556,5 @@ pub fn CssTokenizer::tokenize_all(self : CssTokenizer) -> Array[CssToken] {
     self.pos += 1
     tokens.push({ token_type: Error, from: start, to: self.pos })
   }
-
   tokens
 }

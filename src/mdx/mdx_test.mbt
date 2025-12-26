@@ -1,4 +1,5 @@
-///| MDX Parser Tests
+///|
+/// MDX Parser Tests
 
 // =============================================================================
 // Attribute Parser Tests
@@ -14,6 +15,7 @@ test "parse string attribute with double quotes" {
   }
 }
 
+///|
 test "parse string attribute with single quotes" {
   let (attrs, _) = parse_attributes(" name='value'>", 0)
   assert_eq(attrs.length(), 1)
@@ -24,6 +26,7 @@ test "parse string attribute with single quotes" {
   }
 }
 
+///|
 test "parse expression attribute" {
   let (attrs, _) = parse_attributes(" count={42}>", 0)
   assert_eq(attrs.length(), 1)
@@ -34,6 +37,7 @@ test "parse expression attribute" {
   }
 }
 
+///|
 test "parse boolean attribute" {
   let (attrs, _) = parse_attributes(" disabled>", 0)
   assert_eq(attrs.length(), 1)
@@ -44,8 +48,11 @@ test "parse boolean attribute" {
   }
 }
 
+///|
 test "parse multiple attributes" {
-  let (attrs, _) = parse_attributes(" id=\"main\" class='container' onClick={handleClick} disabled>", 0)
+  let (attrs, _) = parse_attributes(
+    " id=\"main\" class='container' onClick={handleClick} disabled>", 0,
+  )
   assert_eq(attrs.length(), 4)
   assert_eq(attrs[0].name, "id")
   assert_eq(attrs[1].name, "class")
@@ -53,6 +60,7 @@ test "parse multiple attributes" {
   assert_eq(attrs[3].name, "disabled")
 }
 
+///|
 test "parse nested expression" {
   let (attrs, _) = parse_attributes(" data={{ key: 'value' }}>", 0)
   assert_eq(attrs.length(), 1)
@@ -67,6 +75,7 @@ test "parse nested expression" {
 // Import Parser Tests
 // =============================================================================
 
+///|
 test "parse default import" {
   let result = @markdown.parse("import Layout from './Layout'\n")
   let blocks = parse_mdx_blocks(result.document)
@@ -82,6 +91,7 @@ test "parse default import" {
   }
 }
 
+///|
 test "parse named imports" {
   let result = @markdown.parse("import { Button, Card } from './components'\n")
   let blocks = parse_mdx_blocks(result.document)
@@ -97,6 +107,7 @@ test "parse named imports" {
   }
 }
 
+///|
 test "parse aliased import" {
   let result = @markdown.parse("import { Button as Btn } from './components'\n")
   let blocks = parse_mdx_blocks(result.document)
@@ -111,6 +122,7 @@ test "parse aliased import" {
   }
 }
 
+///|
 test "parse namespace import" {
   let result = @markdown.parse("import * as Components from './components'\n")
   let blocks = parse_mdx_blocks(result.document)
@@ -129,6 +141,7 @@ test "parse namespace import" {
 // Export Parser Tests
 // =============================================================================
 
+///|
 test "parse export const" {
   let result = @markdown.parse("export const title = 'Hello'\n")
   let blocks = parse_mdx_blocks(result.document)
@@ -143,6 +156,7 @@ test "parse export const" {
   }
 }
 
+///|
 test "parse export default" {
   let result = @markdown.parse("export default Layout\n")
   let blocks = parse_mdx_blocks(result.document)
@@ -157,8 +171,11 @@ test "parse export default" {
   }
 }
 
+///|
 test "parse export function" {
-  let result = @markdown.parse("export function getLayout() { return <Layout /> }\n")
+  let result = @markdown.parse(
+    "export function getLayout() { return <Layout /> }\n",
+  )
   let blocks = parse_mdx_blocks(result.document)
   assert_eq(blocks.length(), 1)
   match blocks[0] {
@@ -174,6 +191,7 @@ test "parse export function" {
 // JSX Element Tests
 // =============================================================================
 
+///|
 test "parse JSX component" {
   let result = @markdown.parse("<Button>Click me</Button>\n")
   let blocks = parse_mdx_blocks(result.document)
@@ -188,6 +206,7 @@ test "parse JSX component" {
   }
 }
 
+///|
 test "parse self-closing JSX" {
   let result = @markdown.parse("<Spacer />\n")
   let blocks = parse_mdx_blocks(result.document)
@@ -202,8 +221,11 @@ test "parse self-closing JSX" {
   }
 }
 
+///|
 test "parse JSX with attributes" {
-  let result = @markdown.parse("<Button variant=\"primary\" onClick={handleClick}>Submit</Button>\n")
+  let result = @markdown.parse(
+    "<Button variant=\"primary\" onClick={handleClick}>Submit</Button>\n",
+  )
   let blocks = parse_mdx_blocks(result.document)
   assert_eq(blocks.length(), 1)
   match blocks[0] {
@@ -217,8 +239,11 @@ test "parse JSX with attributes" {
   }
 }
 
+///|
 test "parse Web Component" {
-  let result = @markdown.parse("<my-component data-value=\"123\">Content</my-component>\n")
+  let result = @markdown.parse(
+    "<my-component data-value=\"123\">Content</my-component>\n",
+  )
   let blocks = parse_mdx_blocks(result.document)
   assert_eq(blocks.length(), 1)
   match blocks[0] {
@@ -236,6 +261,7 @@ test "parse Web Component" {
 // Metadata Extraction Tests
 // =============================================================================
 
+///|
 test "extract metadata from MDX document" {
   let mdx =
     #|import { Button } from './components'
@@ -248,37 +274,33 @@ test "extract metadata from MDX document" {
     #|
     #|<my-element />
     #|
-
   let result = @markdown.parse(mdx)
   let metadata = extract_mdx_metadata(result.document)
-
   assert_eq(metadata.imports.length(), 2)
   assert_eq(metadata.exports.length(), 1)
   assert_eq(metadata.components.length(), 2)
 }
 
+///|
 test "extract import sources" {
   let mdx =
     #|import { Button } from './components'
     #|import Layout from './Layout'
     #|
-
   let result = @markdown.parse(mdx)
   let sources = extract_import_sources(result.document)
-
   assert_eq(sources.length(), 2)
 }
 
+///|
 test "extract component names" {
   let mdx =
     #|<Button>Click</Button>
     #|
     #|<my-element attr="value">Content</my-element>
     #|
-
   let result = @markdown.parse(mdx)
   let names = extract_component_names(result.document)
-
   assert_eq(names.length(), 2)
 }
 
@@ -286,6 +308,7 @@ test "extract component names" {
 // Transformer Tests
 // =============================================================================
 
+///|
 test "strip all MDX blocks" {
   let mdx =
     #|import { Button } from './components'
@@ -296,7 +319,6 @@ test "strip all MDX blocks" {
     #|
     #|<Button>Click</Button>
     #|
-
   let result = @markdown.parse(mdx)
   let stripped = strip_mdx_blocks(result.document)
 
@@ -304,6 +326,7 @@ test "strip all MDX blocks" {
   assert_true(stripped.children.length() < result.document.children.length())
 }
 
+///|
 test "strip only imports" {
   let mdx =
     #|import { Button } from './components'
@@ -312,7 +335,6 @@ test "strip only imports" {
     #|
     #|<Button>Click</Button>
     #|
-
   let result = @markdown.parse(mdx)
   let stripped = strip_imports(result.document)
 
@@ -325,6 +347,7 @@ test "strip only imports" {
 // Helper Function Tests
 // =============================================================================
 
+///|
 test "is_jsx_component detects uppercase start" {
   assert_true(is_jsx_component("Button"))
   assert_true(is_jsx_component("MyComponent"))
@@ -332,6 +355,7 @@ test "is_jsx_component detects uppercase start" {
   assert_false(is_jsx_component("my-element"))
 }
 
+///|
 test "is_web_component detects hyphen" {
   assert_true(is_web_component("my-element"))
   assert_true(is_web_component("custom-button"))
@@ -339,9 +363,10 @@ test "is_web_component detects hyphen" {
   assert_false(is_web_component("div"))
 }
 
+///|
 test "is_mdx_tag combines both checks" {
-  assert_true(is_mdx_tag("Button"))        // JSX
-  assert_true(is_mdx_tag("my-element"))    // Web Component
-  assert_false(is_mdx_tag("div"))          // HTML
-  assert_false(is_mdx_tag("span"))         // HTML
+  assert_true(is_mdx_tag("Button")) // JSX
+  assert_true(is_mdx_tag("my-element")) // Web Component
+  assert_false(is_mdx_tag("div")) // HTML
+  assert_false(is_mdx_tag("span")) // HTML
 }

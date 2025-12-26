@@ -1,5 +1,7 @@
 ///| Allowed and Forbidden HTML Tags
+
 ///|
+
 ///| Based on DOMPurify's default tag lists
 
 // =============================================================================
@@ -11,19 +13,18 @@
 pub fn allowed_html_tags() -> Array[String] {
   [
     // Text content
-    "a", "abbr", "acronym", "address", "b", "bdi", "bdo", "big", "blockquote",
-    "br", "caption", "center", "cite", "code", "col", "colgroup", "dd", "del",
-    "details", "dfn", "dir", "div", "dl", "dt", "em", "figcaption", "figure",
-    "font", "footer", "h1", "h2", "h3", "h4", "h5", "h6", "header", "hgroup",
-    "hr", "i", "img", "ins", "kbd", "li", "main", "mark", "marquee", "menu",
-    "nav", "ol", "p", "pre", "q", "rp", "rt", "ruby", "s", "samp", "section",
-    "small", "span", "strike", "strong", "sub", "summary", "sup", "table",
-    "tbody", "td", "tfoot", "th", "thead", "time", "tr", "tt", "u", "ul",
-    "var", "wbr",
+    "a", "abbr", "acronym", "address", "b", "bdi", "bdo", "big", "blockquote", "br",
+    "caption", "center", "cite", "code", "col", "colgroup", "dd", "del", "details",
+    "dfn", "dir", "div", "dl", "dt", "em", "figcaption", "figure", "font", "footer",
+    "h1", "h2", "h3", "h4", "h5", "h6", "header", "hgroup", "hr", "i", "img", "ins",
+    "kbd", "li", "main", "mark", "marquee", "menu", "nav", "ol", "p", "pre", "q",
+    "rp", "rt", "ruby", "s", "samp", "section", "small", "span", "strike", "strong",
+    "sub", "summary", "sup", "table", "tbody", "td", "tfoot", "th", "thead", "time",
+    "tr", "tt", "u", "ul", "var", "wbr",
     // Input elements (limited)
-    "input", "label", "textarea", "select", "option", "optgroup", "button",
+     "input", "label", "textarea", "select", "option", "optgroup", "button",
     // Media (images only by default)
-    "picture", "source",
+     "picture", "source",
   ]
 }
 
@@ -31,10 +32,9 @@ pub fn allowed_html_tags() -> Array[String] {
 /// Safe SVG tags
 pub fn allowed_svg_tags() -> Array[String] {
   [
-    "svg", "g", "path", "circle", "ellipse", "line", "polygon", "polyline",
-    "rect", "text", "tspan", "textpath", "defs", "symbol", "use", "image",
-    "clippath", "mask", "pattern", "lineargradient", "radialgradient", "stop",
-    "title", "desc", "metadata",
+    "svg", "g", "path", "circle", "ellipse", "line", "polygon", "polyline", "rect",
+    "text", "tspan", "textpath", "defs", "symbol", "use", "image", "clippath", "mask",
+    "pattern", "lineargradient", "radialgradient", "stop", "title", "desc", "metadata",
   ]
 }
 
@@ -42,10 +42,10 @@ pub fn allowed_svg_tags() -> Array[String] {
 /// Safe MathML tags
 pub fn allowed_math_tags() -> Array[String] {
   [
-    "math", "mi", "mn", "mo", "ms", "mtext", "mspace", "mrow", "mfrac",
-    "msqrt", "mroot", "mstyle", "merror", "mpadded", "mphantom", "mfenced",
-    "msub", "msup", "msubsup", "munder", "mover", "munderover", "mmultiscripts",
-    "mtable", "mtr", "mtd", "maligngroup", "malignmark", "annotation",
+    "math", "mi", "mn", "mo", "ms", "mtext", "mspace", "mrow", "mfrac", "msqrt",
+    "mroot", "mstyle", "merror", "mpadded", "mphantom", "mfenced", "msub", "msup",
+    "msubsup", "munder", "mover", "munderover", "mmultiscripts", "mtable", "mtr",
+    "mtd", "maligngroup", "malignmark", "annotation",
   ]
 }
 
@@ -60,22 +60,21 @@ pub fn forbidden_tags() -> Array[String] {
     // Script execution
     "script", "noscript",
     // External resources
-    "iframe", "frame", "frameset", "noframes",
-    "object", "embed", "applet", "param",
+     "iframe", "frame", "frameset", "noframes", "object", "embed", "applet", "param",
     // Document manipulation
-    "base", "basefont", "link", "meta", "title",
+     "base", "basefont", "link", "meta", "title",
     // Style (can execute JS in some browsers)
-    "style",
+     "style",
     // Form actions (can be used for data exfiltration)
-    "form",
+     "form",
     // Template (can bypass sanitizers)
-    "template",
+     "template",
     // XML processing
-    "xml", "xmp",
+     "xml", "xmp",
     // Deprecated dangerous
-    "plaintext", "listing",
+     "plaintext", "listing",
     // Custom elements registry
-    "slot",
+     "slot",
   ]
 }
 
@@ -124,7 +123,6 @@ pub fn is_allowed_tag(tag : String, config : SanitizeConfig) -> Bool {
       return true
     }
   }
-
   false
 }
 
@@ -182,4 +180,3 @@ fn to_lowercase(s : String) -> String {
   }
   buf.to_string()
 }
-

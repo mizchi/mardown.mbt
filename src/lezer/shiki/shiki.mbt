@@ -1,8 +1,13 @@
 ///| Shiki-compatible syntax highlighting output
+
 ///|
+
 ///| Generates HTML output compatible with Shiki's format:
+
 ///| - `<pre class="shiki" style="background-color: ..."><code>`
+
 ///| - `<span class="line">` for each line
+
 ///| - `<span style="color: ...">` for each token
 
 // =============================================================================
@@ -60,7 +65,10 @@ pub(all) struct ShikiTheme {
 
 ///|
 /// Get color for a highlight tag from theme
-pub fn ShikiTheme::get_color(self : ShikiTheme, tag : @lezer.HighlightTag) -> String {
+pub fn ShikiTheme::get_color(
+  self : ShikiTheme,
+  tag : @lezer.HighlightTag,
+) -> String {
   match tag {
     Keyword => self.keyword
     Operator => self.operator
@@ -226,7 +234,7 @@ priv struct ShikiToken {
 pub fn tokens_to_shiki_html(
   source : String,
   tokens : Array[@lezer.HighlightToken],
-  theme : ShikiTheme
+  theme : ShikiTheme,
 ) -> String {
   let result = StringBuilder::new()
   let chars = source.to_array()
@@ -252,21 +260,23 @@ pub fn tokens_to_shiki_html(
   let mut pos = 0
   let mut line_start = 0
   let mut in_line = false
-
   while pos <= len {
     let is_newline = pos < len && chars[pos] == '\n'
     let is_end = pos == len
-
     if not(in_line) {
       result.write_string("<span class=\"line\">")
       in_line = true
       line_start = pos
     }
-
     if is_newline || is_end {
       // Write content up to newline/end
       write_line_content(
-        result, chars, line_start, pos, colored_tokens, theme.foreground,
+        result,
+        chars,
+        line_start,
+        pos,
+        colored_tokens,
+        theme.foreground,
       )
       result.write_string("</span>")
       in_line = false
@@ -278,7 +288,6 @@ pub fn tokens_to_shiki_html(
       pos = pos + 1
     }
   }
-
   result.write_string("</code></pre>")
   result.to_string()
 }
@@ -291,7 +300,7 @@ fn write_line_content(
   line_start : Int,
   line_end : Int,
   tokens : Array[ShikiToken],
-  default_color : String
+  default_color : String,
 ) -> Unit {
   let mut pos = line_start
 
@@ -307,7 +316,11 @@ fn write_line_content(
     }
 
     // Calculate overlap
-    let token_start = if token.from > line_start { token.from } else { line_start }
+    let token_start = if token.from > line_start {
+      token.from
+    } else {
+      line_start
+    }
     let token_end = if token.to < line_end { token.to } else { line_end }
 
     // Write unhighlighted text before this token
@@ -348,7 +361,7 @@ fn write_line_content(
 /// Highlight TypeScript code to Shiki-compatible HTML
 pub fn highlight_typescript_shiki(
   source : String,
-  theme : ShikiTheme
+  theme : ShikiTheme,
 ) -> String {
   let tokens = @typescript.highlight_typescript(source)
   tokens_to_shiki_html(source, tokens, theme)

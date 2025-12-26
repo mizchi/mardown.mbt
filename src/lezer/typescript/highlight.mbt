@@ -54,16 +54,15 @@ pub fn ts_highlighter() -> @lezer.Highlighter {
   h.add_rule("BlockComment", Comment)
 
   // JSX
-  h.add_rule("JsxTagOpen", TagBracket)      // <
-  h.add_rule("JsxTagClose", TagBracket)     // > or />
-  h.add_rule("JsxCloseTag", TagBracket)     // </
-  h.add_rule("JsxTagName", TagName)         // div, MyComponent
-  h.add_rule("JsxAttribute", PropertyName)  // className, onClick
-  h.add_rule("JsxEquals", Operator)         // = in attr=
-  h.add_rule("JsxText", None)               // plain text, no highlight
-  h.add_rule("JsxExprStart", Brace)         // { in JSX
-  h.add_rule("JsxExprEnd", Brace)           // } in JSX
-
+  h.add_rule("JsxTagOpen", TagBracket) // <
+  h.add_rule("JsxTagClose", TagBracket) // > or />
+  h.add_rule("JsxCloseTag", TagBracket) // </
+  h.add_rule("JsxTagName", TagName) // div, MyComponent
+  h.add_rule("JsxAttribute", PropertyName) // className, onClick
+  h.add_rule("JsxEquals", Operator) // = in attr=
+  h.add_rule("JsxText", None) // plain text, no highlight
+  h.add_rule("JsxExprStart", Brace) // { in JSX
+  h.add_rule("JsxExprEnd", Brace) // } in JSX
   h
 }
 
@@ -122,7 +121,6 @@ pub fn highlight_typescript(source : String) -> Array[@lezer.HighlightToken] {
   let tokens = tokenizer.tokenize_all()
   let highlighter = ts_highlighter()
   let result : Array[@lezer.HighlightToken] = []
-
   for token in tokens {
     let name = token_type_name(token.token_type)
     let tag = highlighter.get_tag(name)

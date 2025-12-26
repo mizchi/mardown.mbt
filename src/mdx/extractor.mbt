@@ -1,5 +1,7 @@
 ///| MDX Metadata Extractor
+
 ///|
+
 ///| Extracts metadata (imports, exports, components) from parsed MDX documents
 
 // =============================================================================
@@ -14,23 +16,19 @@ pub fn extract_mdx_metadata(doc : @markdown.Document) -> MdxMetadata {
   let exports : Array[MdxBlock] = []
   let components : Array[String] = []
   let seen_components : Array[String] = []
-
   let blocks = parse_mdx_blocks(doc)
-
   for block in blocks {
     match block {
       ImportDecl(..) => imports.push(block)
       ExportDecl(..) => exports.push(block)
-      JsxElement(tag~, ..) => {
+      JsxElement(tag~, ..) =>
         // Add component name if not already seen
         if not(array_contains(seen_components, tag)) {
           seen_components.push(tag)
           components.push(tag)
         }
-      }
     }
   }
-
   { imports, exports, components }
 }
 
@@ -39,14 +37,12 @@ pub fn extract_mdx_metadata(doc : @markdown.Document) -> MdxMetadata {
 pub fn extract_imports(doc : @markdown.Document) -> Array[MdxBlock] {
   let blocks = parse_mdx_blocks(doc)
   let result : Array[MdxBlock] = []
-
   for block in blocks {
     match block {
       ImportDecl(..) => result.push(block)
       _ => ()
     }
   }
-
   result
 }
 
@@ -55,14 +51,12 @@ pub fn extract_imports(doc : @markdown.Document) -> Array[MdxBlock] {
 pub fn extract_exports(doc : @markdown.Document) -> Array[MdxBlock] {
   let blocks = parse_mdx_blocks(doc)
   let result : Array[MdxBlock] = []
-
   for block in blocks {
     match block {
       ExportDecl(..) => result.push(block)
       _ => ()
     }
   }
-
   result
 }
 
@@ -71,14 +65,12 @@ pub fn extract_exports(doc : @markdown.Document) -> Array[MdxBlock] {
 pub fn extract_jsx_elements(doc : @markdown.Document) -> Array[MdxBlock] {
   let blocks = parse_mdx_blocks(doc)
   let result : Array[MdxBlock] = []
-
   for block in blocks {
     match block {
       JsxElement(..) => result.push(block)
       _ => ()
     }
   }
-
   result
 }
 
@@ -87,18 +79,15 @@ pub fn extract_jsx_elements(doc : @markdown.Document) -> Array[MdxBlock] {
 pub fn extract_component_names(doc : @markdown.Document) -> Array[String] {
   let blocks = parse_mdx_blocks(doc)
   let names : Array[String] = []
-
   for block in blocks {
     match block {
-      JsxElement(tag~, ..) => {
+      JsxElement(tag~, ..) =>
         if not(array_contains(names, tag)) {
           names.push(tag)
         }
-      }
       _ => ()
     }
   }
-
   names
 }
 
@@ -107,18 +96,15 @@ pub fn extract_component_names(doc : @markdown.Document) -> Array[String] {
 pub fn extract_import_sources(doc : @markdown.Document) -> Array[String] {
   let blocks = parse_mdx_blocks(doc)
   let sources : Array[String] = []
-
   for block in blocks {
     match block {
-      ImportDecl(source~, ..) => {
+      ImportDecl(source~, ..) =>
         if not(array_contains(sources, source)) {
           sources.push(source)
         }
-      }
       _ => ()
     }
   }
-
   sources
 }
 
@@ -135,4 +121,3 @@ fn array_contains(arr : Array[String], item : String) -> Bool {
   }
   false
 }
-

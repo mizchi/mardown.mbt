@@ -25,7 +25,6 @@ pub fn html_highlighter() -> @lezer.Highlighter {
   h.add_rule("Comment", Comment)
   h.add_rule("Doctype", Meta)
   h.add_rule("CData", String)
-
   h
 }
 
@@ -56,7 +55,6 @@ pub fn highlight_html(source : String) -> Array[@lezer.HighlightToken] {
   let tokens = tokenizer.tokenize_all()
   let highlighter = html_highlighter()
   let result : Array[@lezer.HighlightToken] = []
-
   for token in tokens {
     let name = token_type_name(token.token_type)
     let tag = highlighter.get_tag(name)

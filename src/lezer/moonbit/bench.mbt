@@ -4,12 +4,14 @@
 // Test Data Generation
 // =============================================================================
 
-///| Generate simple MoonBit code
+///|
+/// Generate simple MoonBit code
 fn generate_simple_mbt() -> String {
   "let x = 42"
 }
 
-///| Generate function with body
+///|
+/// Generate function with body
 fn generate_function_mbt() -> String {
   let s =
     #|fn fibonacci(n : Int) -> Int {
@@ -22,7 +24,8 @@ fn generate_function_mbt() -> String {
   s
 }
 
-///| Generate struct with fields
+///|
+/// Generate struct with fields
 fn generate_struct_mbt(fields : Int) -> String {
   let buf = StringBuilder::new()
   buf.write_string("struct MyStruct {\n")
@@ -35,7 +38,8 @@ fn generate_struct_mbt(fields : Int) -> String {
   buf.to_string()
 }
 
-///| Generate enum with variants
+///|
+/// Generate enum with variants
 fn generate_enum_mbt(variants : Int) -> String {
   let buf = StringBuilder::new()
   buf.write_string("enum MyEnum {\n")
@@ -48,7 +52,8 @@ fn generate_enum_mbt(variants : Int) -> String {
   buf.to_string()
 }
 
-///| Generate functions with string interpolation
+///|
+/// Generate functions with string interpolation
 fn generate_interp_mbt(count : Int) -> String {
   let buf = StringBuilder::new()
   for i = 0; i < count; i = i + 1 {
@@ -61,7 +66,8 @@ fn generate_interp_mbt(count : Int) -> String {
   buf.to_string()
 }
 
-///| Generate imports
+///|
+/// Generate imports
 fn generate_imports_mbt(count : Int) -> String {
   let buf = StringBuilder::new()
   for i = 0; i < count; i = i + 1 {
@@ -75,7 +81,8 @@ fn generate_imports_mbt(count : Int) -> String {
   buf.to_string()
 }
 
-///| Generate raw strings
+///|
+/// Generate raw strings
 fn generate_raw_strings_mbt(lines : Int) -> String {
   let buf = StringBuilder::new()
   buf.write_string("let code =\n")
@@ -88,23 +95,48 @@ fn generate_raw_strings_mbt(lines : Int) -> String {
 }
 
 // Pre-generate test data
+
+///|
 let mbt_simple : String = generate_simple_mbt()
+
+///|
 let mbt_function : String = generate_function_mbt()
+
+///|
 let mbt_struct_10 : String = generate_struct_mbt(10)
+
+///|
 let mbt_struct_50 : String = generate_struct_mbt(50)
+
+///|
 let mbt_enum_10 : String = generate_enum_mbt(10)
+
+///|
 let mbt_enum_50 : String = generate_enum_mbt(50)
+
+///|
 let mbt_interp_10 : String = generate_interp_mbt(10)
+
+///|
 let mbt_interp_50 : String = generate_interp_mbt(50)
+
+///|
 let mbt_funcs_20 : String = generate_imports_mbt(20)
+
+///|
 let mbt_funcs_100 : String = generate_imports_mbt(100)
+
+///|
 let mbt_raw_20 : String = generate_raw_strings_mbt(20)
+
+///|
 let mbt_raw_100 : String = generate_raw_strings_mbt(100)
 
 // =============================================================================
 // Tokenizer Benchmarks
 // =============================================================================
 
+///|
 test "tokenize: simple" (b : @bench.T) {
   b.bench(fn() {
     let tokenizer = MbtTokenizer::new(mbt_simple)
@@ -113,6 +145,7 @@ test "tokenize: simple" (b : @bench.T) {
   })
 }
 
+///|
 test "tokenize: function" (b : @bench.T) {
   b.bench(fn() {
     let tokenizer = MbtTokenizer::new(mbt_function)
@@ -121,6 +154,7 @@ test "tokenize: function" (b : @bench.T) {
   })
 }
 
+///|
 test "tokenize: struct 10 fields" (b : @bench.T) {
   b.bench(fn() {
     let tokenizer = MbtTokenizer::new(mbt_struct_10)
@@ -129,6 +163,7 @@ test "tokenize: struct 10 fields" (b : @bench.T) {
   })
 }
 
+///|
 test "tokenize: struct 50 fields" (b : @bench.T) {
   b.bench(fn() {
     let tokenizer = MbtTokenizer::new(mbt_struct_50)
@@ -137,6 +172,7 @@ test "tokenize: struct 50 fields" (b : @bench.T) {
   })
 }
 
+///|
 test "tokenize: enum 10 variants" (b : @bench.T) {
   b.bench(fn() {
     let tokenizer = MbtTokenizer::new(mbt_enum_10)
@@ -145,6 +181,7 @@ test "tokenize: enum 10 variants" (b : @bench.T) {
   })
 }
 
+///|
 test "tokenize: enum 50 variants" (b : @bench.T) {
   b.bench(fn() {
     let tokenizer = MbtTokenizer::new(mbt_enum_50)
@@ -153,6 +190,7 @@ test "tokenize: enum 50 variants" (b : @bench.T) {
   })
 }
 
+///|
 test "tokenize: interp 10 strings" (b : @bench.T) {
   b.bench(fn() {
     let tokenizer = MbtTokenizer::new(mbt_interp_10)
@@ -161,6 +199,7 @@ test "tokenize: interp 10 strings" (b : @bench.T) {
   })
 }
 
+///|
 test "tokenize: interp 50 strings" (b : @bench.T) {
   b.bench(fn() {
     let tokenizer = MbtTokenizer::new(mbt_interp_50)
@@ -169,6 +208,7 @@ test "tokenize: interp 50 strings" (b : @bench.T) {
   })
 }
 
+///|
 test "tokenize: funcs 20" (b : @bench.T) {
   b.bench(fn() {
     let tokenizer = MbtTokenizer::new(mbt_funcs_20)
@@ -177,6 +217,7 @@ test "tokenize: funcs 20" (b : @bench.T) {
   })
 }
 
+///|
 test "tokenize: funcs 100" (b : @bench.T) {
   b.bench(fn() {
     let tokenizer = MbtTokenizer::new(mbt_funcs_100)
@@ -185,6 +226,7 @@ test "tokenize: funcs 100" (b : @bench.T) {
   })
 }
 
+///|
 test "tokenize: raw 20 lines" (b : @bench.T) {
   b.bench(fn() {
     let tokenizer = MbtTokenizer::new(mbt_raw_20)
@@ -193,6 +235,7 @@ test "tokenize: raw 20 lines" (b : @bench.T) {
   })
 }
 
+///|
 test "tokenize: raw 100 lines" (b : @bench.T) {
   b.bench(fn() {
     let tokenizer = MbtTokenizer::new(mbt_raw_100)
@@ -205,6 +248,7 @@ test "tokenize: raw 100 lines" (b : @bench.T) {
 // Highlight Benchmarks
 // =============================================================================
 
+///|
 test "highlight: simple" (b : @bench.T) {
   b.bench(fn() {
     let result = highlight_moonbit(mbt_simple)
@@ -212,6 +256,7 @@ test "highlight: simple" (b : @bench.T) {
   })
 }
 
+///|
 test "highlight: function" (b : @bench.T) {
   b.bench(fn() {
     let result = highlight_moonbit(mbt_function)
@@ -219,6 +264,7 @@ test "highlight: function" (b : @bench.T) {
   })
 }
 
+///|
 test "highlight: struct 50 fields" (b : @bench.T) {
   b.bench(fn() {
     let result = highlight_moonbit(mbt_struct_50)
@@ -226,6 +272,7 @@ test "highlight: struct 50 fields" (b : @bench.T) {
   })
 }
 
+///|
 test "highlight: enum 50 variants" (b : @bench.T) {
   b.bench(fn() {
     let result = highlight_moonbit(mbt_enum_50)
@@ -233,6 +280,7 @@ test "highlight: enum 50 variants" (b : @bench.T) {
   })
 }
 
+///|
 test "highlight: interp 50 strings" (b : @bench.T) {
   b.bench(fn() {
     let result = highlight_moonbit(mbt_interp_50)
@@ -240,6 +288,7 @@ test "highlight: interp 50 strings" (b : @bench.T) {
   })
 }
 
+///|
 test "highlight: funcs 100" (b : @bench.T) {
   b.bench(fn() {
     let result = highlight_moonbit(mbt_funcs_100)
@@ -251,6 +300,7 @@ test "highlight: funcs 100" (b : @bench.T) {
 // End-to-end Benchmarks
 // =============================================================================
 
+///|
 test "e2e: simple" (b : @bench.T) {
   b.bench(fn() {
     let result = highlight_moonbit_to_html(mbt_simple)
@@ -258,6 +308,7 @@ test "e2e: simple" (b : @bench.T) {
   })
 }
 
+///|
 test "e2e: function" (b : @bench.T) {
   b.bench(fn() {
     let result = highlight_moonbit_to_html(mbt_function)
@@ -265,6 +316,7 @@ test "e2e: function" (b : @bench.T) {
   })
 }
 
+///|
 test "e2e: struct 50 fields" (b : @bench.T) {
   b.bench(fn() {
     let result = highlight_moonbit_to_html(mbt_struct_50)
@@ -272,6 +324,7 @@ test "e2e: struct 50 fields" (b : @bench.T) {
   })
 }
 
+///|
 test "e2e: funcs 100" (b : @bench.T) {
   b.bench(fn() {
     let result = highlight_moonbit_to_html(mbt_funcs_100)

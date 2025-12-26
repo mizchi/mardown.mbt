@@ -60,7 +60,6 @@ pub fn mbt_highlighter() -> @lezer.Highlighter {
   // Comments
   h.add_rule("LineComment", Comment)
   h.add_rule("DocComment", DocComment)
-
   h
 }
 
@@ -119,7 +118,6 @@ pub fn highlight_moonbit(source : String) -> Array[@lezer.HighlightToken] {
   let tokens = tokenizer.tokenize_all()
   let highlighter = mbt_highlighter()
   let result : Array[@lezer.HighlightToken] = []
-
   for token in tokens {
     let name = token_type_name(token.token_type)
     let tag = highlighter.get_tag(name)

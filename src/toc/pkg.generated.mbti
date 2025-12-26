@@ -1,0 +1,31 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/markdown/toc"
+
+import(
+  "mizchi/markdown"
+)
+
+// Values
+pub fn extract_description_from_blocks(Array[@markdown.Block], max_length? : Int) -> String?
+
+pub fn extract_description_from_document(@markdown.Document, max_length? : Int) -> String?
+
+pub fn extract_from_blocks(Array[@markdown.Block]) -> Array[TocItem]
+
+pub fn extract_from_document(@markdown.Document) -> Array[TocItem]
+
+pub fn extract_text_from_inlines(Array[@markdown.Inline]) -> String
+
+// Errors
+
+// Types and methods
+pub(all) struct TocItem {
+  level : Int
+  text : String
+  id : String
+}
+
+// Type aliases
+
+// Traits
+

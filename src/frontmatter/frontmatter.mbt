@@ -28,13 +28,7 @@ pub fn get_bool(fm : @md.Frontmatter, key : String) -> Bool? {
 /// Get an integer value from frontmatter entries
 pub fn get_int(fm : @md.Frontmatter, key : String) -> Int? {
   match get_string(fm, key) {
-    Some(s) => {
-      try {
-        Some(@strconv.parse_int(s))
-      } catch {
-        _ => None
-      }
-    }
+    Some(s) => Some(@strconv.parse_int(s)) catch { _ => None }
     None => None
   }
 }

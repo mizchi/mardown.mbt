@@ -8,24 +8,24 @@
 /// HTML token types
 pub(all) enum HtmlTokenType {
   // Tags
-  TagOpen       // <
-  TagClose      // >
+  TagOpen // <
+  TagClose // >
   TagSlashClose // />
-  TagOpenEnd    // </
-  TagName       // div, span, etc.
+  TagOpenEnd // </
+  TagName // div, span, etc.
 
   // Attributes
-  AttrName      // class, id, etc.
-  AttrEquals    // =
-  AttrValue     // "value" or 'value'
+  AttrName // class, id, etc.
+  AttrEquals // =
+  AttrValue // "value" or 'value'
 
   // Content
-  Text          // Text content between tags
+  Text // Text content between tags
 
   // Special
-  Comment       // <!-- ... -->
-  Doctype       // <!DOCTYPE ...>
-  CData         // <![CDATA[ ... ]]>
+  Comment // <!-- ... -->
+  Doctype // <!DOCTYPE ...>
+  CData // <![CDATA[ ... ]]>
 
   // Error
   Error
@@ -71,7 +71,7 @@ pub fn HtmlTokenizer::at_end(self : HtmlTokenizer) -> Bool {
 
 ///|
 /// Peek current character
-fn HtmlTokenizer::peek(self : HtmlTokenizer) -> Char? {
+fn HtmlTokenizer::_peek(self : HtmlTokenizer) -> Char? {
   if self.pos < self.len {
     Some(self.chars[self.pos])
   } else {
@@ -92,7 +92,7 @@ fn HtmlTokenizer::peek_at(self : HtmlTokenizer, offset : Int) -> Char? {
 
 ///|
 /// Advance position
-fn HtmlTokenizer::advance(self : HtmlTokenizer) -> Unit {
+fn HtmlTokenizer::_advance(self : HtmlTokenizer) -> Unit {
   self.pos += 1
 }
 
@@ -150,12 +150,12 @@ fn HtmlTokenizer::matches_ignore_case(self : HtmlTokenizer, s : String) -> Bool 
     let c1 = self.chars[self.pos + i]
     let c2 = s_chars[i]
     let c1_lower = if c1 >= 'A' && c1 <= 'Z' {
-      Char::from_int(c1.to_int() + 32)
+      (c1.to_int() + 32).unsafe_to_char()
     } else {
       c1
     }
     let c2_lower = if c2 >= 'A' && c2 <= 'Z' {
-      Char::from_int(c2.to_int() + 32)
+      (c2.to_int() + 32).unsafe_to_char()
     } else {
       c2
     }
@@ -181,7 +181,6 @@ fn HtmlTokenizer::read_comment(self : HtmlTokenizer) -> HtmlToken {
     }
     self.pos += 1
   }
-
   { token_type: Comment, from: start, to: self.pos }
 }
 
@@ -199,7 +198,6 @@ fn HtmlTokenizer::read_doctype(self : HtmlTokenizer) -> HtmlToken {
   if self.pos < self.len {
     self.pos += 1 // skip >
   }
-
   { token_type: Doctype, from: start, to: self.pos }
 }
 
@@ -218,7 +216,6 @@ fn HtmlTokenizer::read_cdata(self : HtmlTokenizer) -> HtmlToken {
     }
     self.pos += 1
   }
-
   { token_type: CData, from: start, to: self.pos }
 }
 
@@ -246,7 +243,6 @@ fn HtmlTokenizer::read_attr_name(self : HtmlTokenizer) -> HtmlToken {
 /// Read an attribute value (quoted or unquoted)
 fn HtmlTokenizer::read_attr_value(self : HtmlTokenizer) -> HtmlToken {
   let start = self.pos
-
   if self.pos < self.len {
     let quote = self.chars[self.pos]
     if quote == '"' || quote == '\'' {
@@ -269,7 +265,6 @@ fn HtmlTokenizer::read_attr_value(self : HtmlTokenizer) -> HtmlToken {
       }
     }
   }
-
   { token_type: AttrValue, from: start, to: self.pos }
 }
 
@@ -287,10 +282,8 @@ fn HtmlTokenizer::read_text(self : HtmlTokenizer) -> HtmlToken {
 /// Tokenize the entire input
 pub fn HtmlTokenizer::tokenize_all(self : HtmlTokenizer) -> Array[HtmlToken] {
   let tokens : Array[HtmlToken] = []
-
   while self.pos < self.len {
     let c = self.chars[self.pos]
-
     if c == '<' {
       // Check for special constructs
       if self.matches("<!--") {
@@ -332,13 +325,10 @@ pub fn HtmlTokenizer::tokenize_all(self : HtmlTokenizer) -> Array[HtmlToken] {
         // Attributes
         while self.pos < self.len {
           self.skip_whitespace()
-
           if self.pos >= self.len {
             break
           }
-
           let c = self.chars[self.pos]
-
           if c == '>' {
             let start = self.pos
             self.pos += 1
@@ -352,7 +342,6 @@ pub fn HtmlTokenizer::tokenize_all(self : HtmlTokenizer) -> Array[HtmlToken] {
           } else if is_name_char(c) {
             // Attribute name
             tokens.push(self.read_attr_name())
-
             self.skip_whitespace()
 
             // Check for =
@@ -360,7 +349,6 @@ pub fn HtmlTokenizer::tokenize_all(self : HtmlTokenizer) -> Array[HtmlToken] {
               let start = self.pos
               self.pos += 1
               tokens.push({ token_type: AttrEquals, from: start, to: self.pos })
-
               self.skip_whitespace()
 
               // Attribute value
@@ -385,6 +373,5 @@ pub fn HtmlTokenizer::tokenize_all(self : HtmlTokenizer) -> Array[HtmlToken] {
       }
     }
   }
-
   tokens
 }

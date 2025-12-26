@@ -1,5 +1,7 @@
 ///| Attribute Sanitization
+
 ///|
+
 ///| Checks for dangerous attributes like event handlers and javascript: URLs
 
 // =============================================================================
@@ -13,24 +15,22 @@ pub fn allowed_attributes() -> Array[String] {
     // Global attributes
     "class", "id", "title", "lang", "dir", "hidden", "tabindex",
     // Link attributes
-    "href", "rel", "download", "hreflang", "type",
+     "href", "rel", "download", "hreflang", "type",
     // Image attributes
-    "src", "alt", "width", "height", "loading", "decoding",
-    "srcset", "sizes",
+     "src", "alt", "width", "height", "loading", "decoding", "srcset", "sizes",
     // Table attributes
-    "colspan", "rowspan", "headers", "scope",
+     "colspan", "rowspan", "headers", "scope",
     // List attributes
-    "value", "reversed", "start",
+     "value", "reversed", "start",
     // Form attributes (limited)
     // Note: "name" is excluded to prevent DOM clobbering attacks
-    "placeholder", "readonly", "disabled", "required", "checked",
-    "maxlength", "minlength", "pattern", "size", "rows", "cols",
-    "for", "autocomplete", "selected", "multiple",
+     "placeholder", "readonly", "disabled", "required", "checked", "maxlength", "minlength",
+    "pattern", "size", "rows", "cols", "for", "autocomplete", "selected", "multiple",
     // Media attributes
-    "controls", "loop", "muted", "poster", "preload",
+     "controls", "loop", "muted", "poster", "preload",
     // Misc
-    "align", "valign", "border", "cellpadding", "cellspacing",
-    "bgcolor", "color", "face", "datetime", "cite", "open",
+     "align", "valign", "border", "cellpadding", "cellspacing", "bgcolor", "color",
+    "face", "datetime", "cite", "open",
   ]
 }
 
@@ -38,14 +38,13 @@ pub fn allowed_attributes() -> Array[String] {
 /// Allowed SVG attributes
 pub fn allowed_svg_attributes() -> Array[String] {
   [
-    "viewbox", "xmlns", "fill", "stroke", "stroke-width", "stroke-linecap",
-    "stroke-linejoin", "stroke-dasharray", "stroke-dashoffset", "opacity",
-    "fill-opacity", "stroke-opacity", "transform", "d", "cx", "cy", "r",
-    "rx", "ry", "x", "y", "x1", "y1", "x2", "y2", "width", "height",
-    "points", "pathlength", "clip-path", "mask", "filter",
-    "gradientunits", "gradienttransform", "spreadmethod", "offset",
-    "stop-color", "stop-opacity", "font-size", "font-family", "font-weight",
-    "text-anchor", "dominant-baseline", "preserveaspectratio",
+    "viewbox", "xmlns", "fill", "stroke", "stroke-width", "stroke-linecap", "stroke-linejoin",
+    "stroke-dasharray", "stroke-dashoffset", "opacity", "fill-opacity", "stroke-opacity",
+    "transform", "d", "cx", "cy", "r", "rx", "ry", "x", "y", "x1", "y1", "x2", "y2",
+    "width", "height", "points", "pathlength", "clip-path", "mask", "filter", "gradientunits",
+    "gradienttransform", "spreadmethod", "offset", "stop-color", "stop-opacity",
+    "font-size", "font-family", "font-weight", "text-anchor", "dominant-baseline",
+    "preserveaspectratio",
   ]
 }
 
@@ -58,24 +57,23 @@ pub fn allowed_svg_attributes() -> Array[String] {
 pub fn forbidden_attributes() -> Array[String] {
   [
     // Form hijacking
-    "action", "formaction", "formmethod", "formenctype", "formtarget",
-    "formnovalidate",
+    "action", "formaction", "formmethod", "formenctype", "formtarget", "formnovalidate",
     // Script execution
-    "xlink:href", "href" , // Only forbidden when contains javascript:
+     "xlink:href", "href", // Only forbidden when contains javascript:
     // Iframe/embed
-    "srcdoc", "sandbox", "allow", "allowfullscreen", "allowpaymentrequest",
+     "srcdoc", "sandbox", "allow", "allowfullscreen", "allowpaymentrequest",
     // Dangerous meta
-    "http-equiv", "content", "charset",
+     "http-equiv", "content", "charset",
     // Object/embed
-    "data", "codebase", "code", "archive", "classid",
+     "data", "codebase", "code", "archive", "classid",
     // Behavior
-    "autofocus", "autoplay",
+     "autofocus", "autoplay",
     // Injection
-    "ping", "dynsrc", "lowsrc",
+     "ping", "dynsrc", "lowsrc",
     // Background (can load external resources)
-    "background",
+     "background",
     // DOM clobbering prevention (name attribute on img/form elements)
-    "name",
+     "name",
   ]
 }
 
@@ -105,7 +103,6 @@ pub fn is_event_handler(attr_name : String) -> Bool {
       }
     }
   }
-
   false
 }
 
@@ -115,7 +112,7 @@ pub fn is_allowed_attribute(
   attr_name : String,
   attr_value : String,
   tag_name : String,
-  config : SanitizeConfig
+  config : SanitizeConfig,
 ) -> Bool {
   let lower_attr = to_lowercase_attr(attr_name)
   let lower_tag = to_lowercase_attr(tag_name)
@@ -166,13 +163,15 @@ pub fn is_allowed_attribute(
       return true
     }
   }
-
   false
 }
 
 ///|
 /// Check if an attribute is forbidden
-pub fn is_forbidden_attribute(attr_name : String, config : SanitizeConfig) -> Bool {
+pub fn is_forbidden_attribute(
+  attr_name : String,
+  config : SanitizeConfig,
+) -> Bool {
   let lower = to_lowercase_attr(attr_name)
 
   // Check additional forbidden attrs from config
@@ -204,8 +203,8 @@ pub fn is_safe_url(url : String, config : SanitizeConfig) -> Bool {
 
   // Check for dangerous protocols
   if starts_with(lower, "javascript:") ||
-     starts_with(lower, "vbscript:") ||
-     starts_with(lower, "jscript:") {
+    starts_with(lower, "vbscript:") ||
+    starts_with(lower, "jscript:") {
     return false
   }
 
@@ -215,8 +214,8 @@ pub fn is_safe_url(url : String, config : SanitizeConfig) -> Bool {
     if starts_with(lower, "data:image/") {
       // Check for embedded script in data URL
       if contains_string(lower, "script") ||
-         contains_string(lower, "onerror") ||
-         contains_string(lower, "onload") {
+        contains_string(lower, "onerror") ||
+        contains_string(lower, "onload") {
         return false
       }
       return true
@@ -228,7 +227,7 @@ pub fn is_safe_url(url : String, config : SanitizeConfig) -> Bool {
   // Extract protocol from URL
   match extract_protocol(lower) {
     Some(protocol) => array_contains_attr(config.allowed_schemes, protocol)
-    None => true  // Relative URLs are OK
+    None => true // Relative URLs are OK
   }
 }
 
@@ -238,7 +237,6 @@ fn extract_protocol(url : String) -> String? {
   let chars = url.to_array()
   let len = chars.length()
   let buf = StringBuilder::new()
-
   for i = 0; i < len; i = i + 1 {
     let c = chars[i]
     if c == ':' {
@@ -251,14 +249,17 @@ fn extract_protocol(url : String) -> String? {
       // Reached path/query/fragment without finding protocol
       return None
     }
-    if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '+' || c == '-' || c == '.' {
+    if (c >= 'a' && c <= 'z') ||
+      (c >= 'A' && c <= 'Z') ||
+      c == '+' ||
+      c == '-' ||
+      c == '.' {
       buf.write_char(c)
     } else if i == 0 {
       // First char must be letter for protocol
       return None
     }
   }
-
   None
 }
 
@@ -310,17 +311,14 @@ fn array_contains_attr(arr : Array[String], item : String) -> Bool {
 fn starts_with(s : String, prefix : String) -> Bool {
   let s_chars = s.to_array()
   let p_chars = prefix.to_array()
-
   if s_chars.length() < p_chars.length() {
     return false
   }
-
   for i = 0; i < p_chars.length(); i = i + 1 {
     if s_chars[i] != p_chars[i] {
       return false
     }
   }
-
   true
 }
 
@@ -330,11 +328,9 @@ fn contains_string(haystack : String, needle : String) -> Bool {
   let n_chars = needle.to_array()
   let h_len = h_chars.length()
   let n_len = n_chars.length()
-
   if n_len > h_len {
     return false
   }
-
   for i = 0; i <= h_len - n_len; i = i + 1 {
     let mut found = true
     for j = 0; j < n_len; j = j + 1 {
@@ -347,7 +343,6 @@ fn contains_string(haystack : String, needle : String) -> Bool {
       return true
     }
   }
-
   false
 }
 
@@ -355,25 +350,29 @@ fn contains_string(haystack : String, needle : String) -> Bool {
 fn trim_string(s : String) -> String {
   let chars = s.to_array()
   let len = chars.length()
-
   let mut start = 0
   while start < len &&
-        (chars[start] == ' ' || chars[start] == '\t' ||
-         chars[start] == '\n' || chars[start] == '\r') {
+        (
+          chars[start] == ' ' ||
+          chars[start] == '\t' ||
+          chars[start] == '\n' ||
+          chars[start] == '\r'
+        ) {
     start += 1
   }
-
   let mut end = len
   while end > start &&
-        (chars[end - 1] == ' ' || chars[end - 1] == '\t' ||
-         chars[end - 1] == '\n' || chars[end - 1] == '\r') {
+        (
+          chars[end - 1] == ' ' ||
+          chars[end - 1] == '\t' ||
+          chars[end - 1] == '\n' ||
+          chars[end - 1] == '\r'
+        ) {
     end -= 1
   }
-
   if start == 0 && end == len {
     return s
   }
-
   let buf = StringBuilder::new()
   for i = start; i < end; i = i + 1 {
     buf.write_char(chars[i])
@@ -386,4 +385,3 @@ fn is_svg_tag(tag : String) -> Bool {
   let svg_tags = allowed_svg_tags()
   array_contains_attr(svg_tags, tag)
 }
-

@@ -41,7 +41,10 @@ test "extract_from_blocks: basic headings" {
 
 ///|
 test "extract_description_from_blocks: first paragraph" {
-  let blocks = [make_heading(1, "Title"), make_paragraph("This is the description.")]
+  let blocks = [
+    make_heading(1, "Title"),
+    make_paragraph("This is the description."),
+  ]
   let desc = extract_description_from_blocks(blocks)
   inspect(desc, content="Some(\"This is the description.\")")
 }
@@ -63,9 +66,7 @@ test "extract_text_from_inlines: basic text" {
     @md.Inline::Text(content="Hello ", span=@md.Span::empty()),
     @md.Inline::Strong(
       marker=@md.EmphasisMarker::Asterisk,
-      children=[
-        @md.Inline::Text(content="World", span=@md.Span::empty()),
-      ],
+      children=[@md.Inline::Text(content="World", span=@md.Span::empty())],
       span=@md.Span::empty(),
     ),
   ]

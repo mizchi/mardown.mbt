@@ -1,5 +1,7 @@
 ///| MoonBit Tokenizer
+
 ///|
+
 ///| A tokenizer for MoonBit language for syntax highlighting.
 
 // =============================================================================
@@ -10,52 +12,52 @@
 /// MoonBit token types
 pub(all) enum MbtTokenType {
   // Keywords
-  Keyword      // fn, let, if, else, match, etc.
+  Keyword // fn, let, if, else, match, etc.
   // Literals
-  String       // "..." (no interpolation)
-  StringHead   // "...\{  (start of interpolated string)
+  String // "..." (no interpolation)
+  StringHead // "...\{  (start of interpolated string)
   StringMiddle // }...\{  (middle part)
-  StringTail   // }..."   (end part)
-  Char         // 'x'
-  Byte         // b'x'
-  ByteString   // b"..."
-  Number       // 123, 0xFF, 0b101, 1.5e10
-  True         // true
-  False        // false
+  StringTail // }..."   (end part)
+  Char // 'x'
+  Byte // b'x'
+  ByteString // b"..."
+  Number // 123, 0xFF, 0b101, 1.5e10
+  True // true
+  False // false
   // Names
-  Identifier   // variable names, function names
-  TypeName     // PascalCase type names
-  Label        // ~label
+  Identifier // variable names, function names
+  TypeName // PascalCase type names
+  Label // ~label
   // Operators
-  Operator     // +, -, *, /, =, ==, etc.
-  Arrow        // -> or =>
-  Range        // ..
-  Pipe         // |>
-  Question     // ?
+  Operator // +, -, *, /, =, ==, etc.
+  Arrow // -> or =>
+  Range // ..
+  Pipe // |>
+  Question // ?
   // Punctuation
-  BraceOpen    // {
-  BraceClose   // }
-  BracketOpen  // [
+  BraceOpen // {
+  BraceClose // }
+  BracketOpen // [
   BracketClose // ]
-  ParenOpen    // (
-  ParenClose   // )
-  Semicolon    // ;
-  Comma        // ,
-  Dot          // .
-  Colon        // :
-  DoubleColon  // ::
-  At           // @
-  Tilde        // ~
-  Underscore   // _ (wildcard)
+  ParenOpen // (
+  ParenClose // )
+  Semicolon // ;
+  Comma // ,
+  Dot // .
+  Colon // :
+  DoubleColon // ::
+  At // @
+  Tilde // ~
+  Underscore // _ (wildcard)
   // Comments
-  LineComment  // // ...
-  DocComment   // ///| ...
+  LineComment // // ...
+  DocComment // ///| ...
   // Raw string
-  RawString        // #|... (no interpolation)
-  InterpString     // $|... (simple, no interpolation in this line)
+  RawString // #|... (no interpolation)
+  InterpString // $|... (simple, no interpolation in this line)
   InterpStringHead // $|...\{ (start of interpolation)
   InterpStringMiddle // }...\{ (middle of interpolation)
-  InterpStringTail   // }...  (end of interpolation)
+  InterpStringTail // }...  (end of interpolation)
   // Error
   Error
 } derive(Eq, Show)
@@ -69,11 +71,29 @@ pub(all) enum MbtTokenType {
 fn is_keyword(word : String) -> Bool {
   match word {
     // Control flow
-    "if" | "else" | "match" | "while" | "loop" | "for" | "in" |
-    "break" | "continue" | "return" => true
+    "if"
+    | "else"
+    | "match"
+    | "while"
+    | "loop"
+    | "for"
+    | "in"
+    | "break"
+    | "continue"
+    | "return" => true
     // Declarations
-    "fn" | "let" | "const" | "type" | "struct" | "enum" | "trait" |
-    "impl" | "derive" | "test" | "init" | "extern" => true
+    "fn"
+    | "let"
+    | "const"
+    | "type"
+    | "struct"
+    | "enum"
+    | "trait"
+    | "impl"
+    | "derive"
+    | "test"
+    | "init"
+    | "extern" => true
     // Modifiers
     "pub" | "priv" | "mut" | "readonly" | "async" => true
     // Error handling
@@ -93,10 +113,21 @@ fn is_keyword(word : String) -> Bool {
 fn is_builtin_type(word : String) -> Bool {
   match word {
     // Primitive types
-    "Int" | "Int64" | "UInt" | "UInt64" | "Double" | "Float" | "Bool" |
-    "String" | "Char" | "Byte" | "Bytes" | "Unit" => true
+    "Int"
+    | "Int64"
+    | "UInt"
+    | "UInt64"
+    | "Double"
+    | "Float"
+    | "Bool"
+    | "String"
+    | "Char"
+    | "Byte"
+    | "Bytes"
+    | "Unit" => true
     // Common types
-    "Array" | "Map" | "Set" | "Option" | "Result" | "Iter" | "FixedArray" => true
+    "Array" | "Map" | "Set" | "Option" | "Result" | "Iter" | "FixedArray" =>
+      true
     // Special
     "Self" | "Error" => true
     _ => false
@@ -122,9 +153,9 @@ pub(all) struct MbtToken {
 ///|
 /// Parser context for string interpolation
 enum MbtContext {
-  Normal               // Regular code
-  StringInterp         // Inside \{...} in "..." string
-  InterpStringInterp   // Inside \{...} in $|... string
+  Normal // Regular code
+  StringInterp // Inside \{...} in "..." string
+  InterpStringInterp // Inside \{...} in $|... string
 } derive(Eq, Show)
 
 // =============================================================================
@@ -145,13 +176,7 @@ pub(all) struct MbtTokenizer {
 /// Create a new tokenizer
 pub fn MbtTokenizer::new(input : String) -> MbtTokenizer {
   let chars = input.to_array()
-  {
-    input,
-    chars,
-    len: chars.length(),
-    pos: 0,
-    context_stack: [Normal]
-  }
+  { input, chars, len: chars.length(), pos: 0, context_stack: [Normal] }
 }
 
 ///|
@@ -175,6 +200,7 @@ fn MbtTokenizer::push_context(self : MbtTokenizer, ctx : MbtContext) -> Unit {
 fn MbtTokenizer::pop_context(self : MbtTokenizer) -> Unit {
   if self.context_stack.length() > 1 {
     let _ = self.context_stack.pop()
+
   }
 }
 
@@ -228,8 +254,7 @@ fn MbtTokenizer::skip_whitespace(self : MbtTokenizer) -> Unit {
 /// Read a string literal (with interpolation support)
 fn MbtTokenizer::read_string(self : MbtTokenizer) -> MbtToken {
   let start = self.pos
-  self.pos += 1  // Skip opening "
-
+  self.pos += 1 // Skip opening "
   while self.pos < self.len {
     let c = self.chars[self.pos]
     if c == '"' {
@@ -239,11 +264,11 @@ fn MbtTokenizer::read_string(self : MbtTokenizer) -> MbtToken {
       let next = self.chars[self.pos + 1]
       if next == '{' {
         // String interpolation starts: "...\{
-        self.pos += 2  // Skip \{
+        self.pos += 2 // Skip \{
         self.push_context(StringInterp)
         return { token_type: StringHead, from: start, to: self.pos }
       } else {
-        self.pos += 2  // Skip escape sequence
+        self.pos += 2 // Skip escape sequence
       }
     } else {
       self.pos += 1
@@ -256,9 +281,8 @@ fn MbtTokenizer::read_string(self : MbtTokenizer) -> MbtToken {
 /// Continue reading string after interpolation (after })
 fn MbtTokenizer::read_string_continuation(self : MbtTokenizer) -> MbtToken {
   let start = self.pos
-  self.pos += 1  // Skip }
+  self.pos += 1 // Skip }
   self.pop_context()
-
   while self.pos < self.len {
     let c = self.chars[self.pos]
     if c == '"' {
@@ -285,8 +309,7 @@ fn MbtTokenizer::read_string_continuation(self : MbtTokenizer) -> MbtToken {
 /// Read a character literal
 fn MbtTokenizer::read_char(self : MbtTokenizer) -> MbtToken {
   let start = self.pos
-  self.pos += 1  // Skip '
-
+  self.pos += 1 // Skip '
   while self.pos < self.len {
     let c = self.chars[self.pos]
     if c == '\'' {
@@ -305,9 +328,8 @@ fn MbtTokenizer::read_char(self : MbtTokenizer) -> MbtToken {
 /// Read a byte string (b"...")
 fn MbtTokenizer::read_byte_string(self : MbtTokenizer) -> MbtToken {
   let start = self.pos
-  self.pos += 1  // Skip 'b'
-  self.pos += 1  // Skip '"'
-
+  self.pos += 1 // Skip 'b'
+  self.pos += 1 // Skip '"'
   while self.pos < self.len {
     let c = self.chars[self.pos]
     if c == '"' {
@@ -326,9 +348,8 @@ fn MbtTokenizer::read_byte_string(self : MbtTokenizer) -> MbtToken {
 /// Read a byte literal (b'x')
 fn MbtTokenizer::read_byte(self : MbtTokenizer) -> MbtToken {
   let start = self.pos
-  self.pos += 1  // Skip 'b'
-  self.pos += 1  // Skip '\''
-
+  self.pos += 1 // Skip 'b'
+  self.pos += 1 // Skip '\''
   while self.pos < self.len {
     let c = self.chars[self.pos]
     if c == '\'' {
@@ -453,7 +474,6 @@ fn MbtTokenizer::read_number(self : MbtTokenizer) -> MbtToken {
       }
     }
   }
-
   { token_type: Number, from: start, to: self.pos }
 }
 
@@ -462,11 +482,9 @@ fn MbtTokenizer::read_number(self : MbtTokenizer) -> MbtToken {
 fn MbtTokenizer::read_identifier(self : MbtTokenizer) -> MbtToken {
   let start = self.pos
   let first_char = self.chars[self.pos]
-
   while self.pos < self.len && is_ident_part(self.chars[self.pos]) {
     self.pos += 1
   }
-
   let word = self.input.unsafe_substring(start~, end=self.pos)
   let token_type = match word {
     "true" => True
@@ -474,7 +492,7 @@ fn MbtTokenizer::read_identifier(self : MbtTokenizer) -> MbtToken {
     "_" => Underscore
     _ if is_keyword(word) => Keyword
     _ if is_uppercase(first_char) && is_builtin_type(word) => TypeName
-    _ if is_uppercase(first_char) => TypeName  // PascalCase = type name
+    _ if is_uppercase(first_char) => TypeName // PascalCase = type name
     _ => Identifier
   }
   { token_type, from: start, to: self.pos }
@@ -508,8 +526,7 @@ fn MbtTokenizer::read_line_comment(self : MbtTokenizer) -> MbtToken {
 /// Read a raw string line (#|...)
 fn MbtTokenizer::read_raw_string(self : MbtTokenizer) -> MbtToken {
   let start = self.pos
-  self.pos += 2  // Skip #|
-
+  self.pos += 2 // Skip #|
   while self.pos < self.len && self.chars[self.pos] != '\n' {
     self.pos += 1
   }
@@ -520,13 +537,12 @@ fn MbtTokenizer::read_raw_string(self : MbtTokenizer) -> MbtToken {
 /// Read an interpolated string line ($|... with \{} support)
 fn MbtTokenizer::read_interp_string(self : MbtTokenizer) -> MbtToken {
   let start = self.pos
-  self.pos += 2  // Skip $|
-
+  self.pos += 2 // Skip $|
   while self.pos < self.len && self.chars[self.pos] != '\n' {
     let c = self.chars[self.pos]
     if c == '\\' && self.pos + 1 < self.len && self.chars[self.pos + 1] == '{' {
       // Found \{ - interpolation starts
-      self.pos += 2  // Skip \{
+      self.pos += 2 // Skip \{
       self.push_context(InterpStringInterp)
       return { token_type: InterpStringHead, from: start, to: self.pos }
     }
@@ -537,11 +553,12 @@ fn MbtTokenizer::read_interp_string(self : MbtTokenizer) -> MbtToken {
 
 ///|
 /// Continue reading interpolated string after } in $|... context
-fn MbtTokenizer::read_interp_string_continuation(self : MbtTokenizer) -> MbtToken {
+fn MbtTokenizer::read_interp_string_continuation(
+  self : MbtTokenizer,
+) -> MbtToken {
   let start = self.pos
-  self.pos += 1  // Skip }
+  self.pos += 1 // Skip }
   self.pop_context()
-
   while self.pos < self.len && self.chars[self.pos] != '\n' {
     let c = self.chars[self.pos]
     if c == '\\' && self.pos + 1 < self.len && self.chars[self.pos + 1] == '{' {
@@ -581,9 +598,18 @@ fn MbtTokenizer::read_operator(self : MbtTokenizer) -> MbtToken {
         self.pos += 2
         return { token_type: DoubleColon, from: start, to: self.pos }
       }
-      ('=', '=') | ('!', '=') | ('<', '=') | ('>', '=') |
-      ('&', '&') | ('|', '|') | ('<', '<') | ('>', '>') |
-      ('+', '=') | ('-', '=') | ('*', '=') | ('/', '=') => {
+      ('=', '=')
+      | ('!', '=')
+      | ('<', '=')
+      | ('>', '=')
+      | ('&', '&')
+      | ('|', '|')
+      | ('<', '<')
+      | ('>', '>')
+      | ('+', '=')
+      | ('-', '=')
+      | ('*', '=')
+      | ('/', '=') => {
         self.pos += 2
         return { token_type: Operator, from: start, to: self.pos }
       }
@@ -600,7 +626,7 @@ fn MbtTokenizer::read_operator(self : MbtTokenizer) -> MbtToken {
 /// Read a label (~label)
 fn MbtTokenizer::read_label(self : MbtTokenizer) -> MbtToken {
   let start = self.pos
-  self.pos += 1  // Skip ~
+  self.pos += 1 // Skip ~
 
   // Read the identifier part
   while self.pos < self.len && is_ident_part(self.chars[self.pos]) {
@@ -613,14 +639,11 @@ fn MbtTokenizer::read_label(self : MbtTokenizer) -> MbtToken {
 /// Get next token
 pub fn MbtTokenizer::next_token(self : MbtTokenizer) -> MbtToken? {
   self.skip_whitespace()
-
   if self.pos >= self.len {
     return None
   }
-
   let start = self.pos
   let c = self.chars[self.pos]
-
   let token : MbtToken = match c {
     // String literal
     '"' => self.read_string()
@@ -629,7 +652,7 @@ pub fn MbtTokenizer::next_token(self : MbtTokenizer) -> MbtToken? {
     '\'' => self.read_char()
 
     // Byte string or identifier starting with 'b'
-    'b' => {
+    'b' =>
       if self.pos + 1 < self.len {
         let next = self.chars[self.pos + 1]
         if next == '"' {
@@ -642,36 +665,32 @@ pub fn MbtTokenizer::next_token(self : MbtTokenizer) -> MbtToken? {
       } else {
         self.read_identifier()
       }
-    }
 
     // Comment or operator
-    '/' => {
+    '/' =>
       if self.pos + 1 < self.len && self.chars[self.pos + 1] == '/' {
         self.read_line_comment()
       } else {
         self.read_operator()
       }
-    }
 
     // Raw string or operator
-    '#' => {
+    '#' =>
       if self.pos + 1 < self.len && self.chars[self.pos + 1] == '|' {
         self.read_raw_string()
       } else {
         self.pos += 1
         { token_type: Operator, from: start, to: self.pos }
       }
-    }
 
     // Interpolated multiline string ($|...)
-    '$' => {
+    '$' =>
       if self.pos + 1 < self.len && self.chars[self.pos + 1] == '|' {
         self.read_interp_string()
       } else {
         self.pos += 1
         { token_type: Operator, from: start, to: self.pos }
       }
-    }
 
     // Braces
     '{' => {
@@ -716,7 +735,7 @@ pub fn MbtTokenizer::next_token(self : MbtTokenizer) -> MbtToken? {
       self.pos += 1
       { token_type: Comma, from: start, to: self.pos }
     }
-    ':' => {
+    ':' =>
       if self.pos + 1 < self.len && self.chars[self.pos + 1] == ':' {
         self.pos += 2
         { token_type: DoubleColon, from: start, to: self.pos }
@@ -724,7 +743,6 @@ pub fn MbtTokenizer::next_token(self : MbtTokenizer) -> MbtToken? {
         self.pos += 1
         { token_type: Colon, from: start, to: self.pos }
       }
-    }
     '@' => {
       self.pos += 1
       { token_type: At, from: start, to: self.pos }
@@ -733,7 +751,7 @@ pub fn MbtTokenizer::next_token(self : MbtTokenizer) -> MbtToken? {
       self.pos += 1
       { token_type: Question, from: start, to: self.pos }
     }
-    '~' => {
+    '~' =>
       // Label or tilde operator
       if self.pos + 1 < self.len && is_ident_start(self.chars[self.pos + 1]) {
         self.read_label()
@@ -741,10 +759,9 @@ pub fn MbtTokenizer::next_token(self : MbtTokenizer) -> MbtToken? {
         self.pos += 1
         { token_type: Tilde, from: start, to: self.pos }
       }
-    }
 
     // Dot or range
-    '.' => {
+    '.' =>
       if self.pos + 1 < self.len && self.chars[self.pos + 1] == '.' {
         self.pos += 2
         { token_type: Range, from: start, to: self.pos }
@@ -754,7 +771,6 @@ pub fn MbtTokenizer::next_token(self : MbtTokenizer) -> MbtToken? {
         self.pos += 1
         { token_type: Dot, from: start, to: self.pos }
       }
-    }
 
     // Numbers
     '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' =>
@@ -773,7 +789,6 @@ pub fn MbtTokenizer::next_token(self : MbtTokenizer) -> MbtToken? {
       { token_type: Error, from: start, to: self.pos }
     }
   }
-
   Some(token)
 }
 

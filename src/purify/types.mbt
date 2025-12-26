@@ -1,5 +1,7 @@
 ///| HTML Sanitizer Types
+
 ///|
+
 ///| Configuration and result types for XSS sanitization
 
 // =============================================================================
@@ -45,7 +47,7 @@ pub(all) struct SanitizeConfig {
 pub fn SanitizeConfig::default() -> SanitizeConfig {
   {
     allow_html: true,
-    allow_svg: false,  // SVG is risky, disabled by default
+    allow_svg: false, // SVG is risky, disabled by default
     allow_math: false, // MathML disabled by default
     allow_data_attr: true,
     allow_aria_attr: true,
@@ -106,7 +108,7 @@ pub fn SanitizeConfig::permissive() -> SanitizeConfig {
 ///|
 /// Create config with specific web components allowed
 pub fn SanitizeConfig::with_custom_elements(
-  elements : Array[String]
+  elements : Array[String],
 ) -> SanitizeConfig {
   {
     ..SanitizeConfig::default(),
@@ -149,4 +151,3 @@ pub(all) enum RemovedKind {
   Url
   Protocol
 } derive(Eq, Show)
-

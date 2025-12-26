@@ -326,26 +326,20 @@ pub fn TreeCursor::depth(self : TreeCursor) -> Int {
 // =============================================================================
 
 ///|
+/// Collect all nodes in depth-first order
+fn Tree::collect_nodes(self : Tree, nodes : Array[Tree]) -> Unit {
+  nodes.push(self)
+  for child in self.children() {
+    child.collect_nodes(nodes)
+  }
+}
+
+///|
 /// Iterate over all nodes in depth-first order
 pub fn Tree::iter(self : Tree) -> Iter[Tree] {
-  Iter::new(fn(yield_) {
-    fn visit(tree : Tree) -> IterResult {
-      match yield_(tree) {
-        IterEnd => IterEnd
-        IterContinue => {
-          for child in tree.children() {
-            match visit(child) {
-              IterEnd => return IterEnd
-              IterContinue => ()
-            }
-          }
-          IterContinue
-        }
-      }
-    }
-
-    visit(self)
-  })
+  let nodes : Array[Tree] = []
+  self.collect_nodes(nodes)
+  nodes.iter()
 }
 
 ///|

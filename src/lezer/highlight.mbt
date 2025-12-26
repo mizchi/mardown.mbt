@@ -1,5 +1,7 @@
 ///| Syntax Highlighting support for Lezer-style trees
+
 ///|
+
 ///| Provides highlight token generation from parsed syntax trees.
 
 // =============================================================================
@@ -16,7 +18,7 @@ pub(all) enum HighlightTag {
   // Literals
   String
   Number
-  Regexp       // Regular expression literals
+  Regexp // Regular expression literals
   Bool
   Null
   // Names
@@ -25,9 +27,9 @@ pub(all) enum HighlightTag {
   FunctionName
   TypeName
   ClassName
-  PrivateName  // #privateField
+  PrivateName // #privateField
   // Meta
-  Meta         // @decorator
+  Meta // @decorator
   // Structure
   Bracket
   Brace
@@ -36,8 +38,8 @@ pub(all) enum HighlightTag {
   Comment
   DocComment
   // JSX/XML
-  TagName      // JSX/HTML tag name: div, span, MyComponent
-  TagBracket   // JSX/XML delimiters: < > /> </
+  TagName // JSX/HTML tag name: div, span, MyComponent
+  TagBracket // JSX/XML delimiters: < > /> </
   // Errors
   Invalid
   // No highlighting
@@ -92,7 +94,7 @@ pub(all) struct HighlightToken {
 pub fn HighlightToken::new(
   from : Int,
   to : Int,
-  tag : HighlightTag
+  tag : HighlightTag,
 ) -> HighlightToken {
   { from, to, tag }
 }
@@ -119,7 +121,7 @@ pub fn Highlighter::new() -> Highlighter {
 pub fn Highlighter::add_rule(
   self : Highlighter,
   node_name : String,
-  tag : HighlightTag
+  tag : HighlightTag,
 ) -> Unit {
   self.rules[node_name] = tag
 }
@@ -128,7 +130,7 @@ pub fn Highlighter::add_rule(
 /// Get highlight tag for a node type
 pub fn Highlighter::get_tag(
   self : Highlighter,
-  node_name : String
+  node_name : String,
 ) -> HighlightTag {
   match self.rules.get(node_name) {
     Some(tag) => tag
@@ -140,7 +142,7 @@ pub fn Highlighter::get_tag(
 /// Generate highlight tokens from a tree
 pub fn Highlighter::highlight(
   self : Highlighter,
-  tree : Tree
+  tree : Tree,
 ) -> Array[HighlightToken] {
   let tokens : Array[HighlightToken] = []
   for node in tree.iter() {
@@ -193,7 +195,7 @@ pub fn escape_html_slice_to(
   chars : Array[Char],
   from : Int,
   to : Int,
-  buf : StringBuilder
+  buf : StringBuilder,
 ) -> Unit {
   for i = from; i < to; i = i + 1 {
     match chars[i] {
@@ -211,7 +213,7 @@ pub fn escape_html_slice_to(
 /// Note: tokens are assumed to be already sorted by position (as produced by tokenizers)
 pub fn tokens_to_html(
   source : String,
-  tokens : Array[HighlightToken]
+  tokens : Array[HighlightToken],
 ) -> String {
   let result = StringBuilder::new()
   let chars = source.to_array()

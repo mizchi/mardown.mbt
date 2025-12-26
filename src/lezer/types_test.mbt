@@ -58,25 +58,25 @@ test "Tree::resolve finds deepest node at position" {
 
   // Position 0 should resolve to left child
   let resolved = tree.resolve(0)
-  assert_true(resolved.is_some())
+  assert_true(resolved is Some(_))
   assert_eq(resolved.unwrap().from(), 0)
   assert_eq(resolved.unwrap().to(), 1)
 
   // Position 4 should resolve to right child
   let resolved2 = tree.resolve(4)
-  assert_true(resolved2.is_some())
+  assert_true(resolved2 is Some(_))
   assert_eq(resolved2.unwrap().from(), 4)
   assert_eq(resolved2.unwrap().to(), 5)
 
   // Position 2 (between children) should resolve to parent
   let resolved3 = tree.resolve(2)
-  assert_true(resolved3.is_some())
+  assert_true(resolved3 is Some(_))
   assert_eq(resolved3.unwrap().from(), 0)
   assert_eq(resolved3.unwrap().to(), 5)
 
   // Position outside should return None
   let resolved4 = tree.resolve(10)
-  assert_true(resolved4.is_none())
+  assert_true(resolved4 is None)
 }
 
 // =============================================================================
@@ -173,7 +173,7 @@ test "TreeBuffer stores nodes compactly" {
   buffer.push_leaf(1, 0, 3)
   assert_eq(buffer.node_count(), 1)
   let node = buffer.get_node(0)
-  assert_true(node.is_some())
+  assert_true(node is Some(_))
   let (type_id, from, to, size) = node.unwrap()
   assert_eq(type_id, 1)
   assert_eq(from, 0)

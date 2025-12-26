@@ -1,6 +1,9 @@
 ///| MDX Types
+
 ///|
+
 ///| Type definitions for MDX parsing including import/export statements,
+
 ///| JSX elements, and Web Components.
 
 // =============================================================================
@@ -11,9 +14,9 @@
 /// Import specifier (e.g., `{ X, Y as Z }` or `X` for default)
 pub(all) struct ImportSpecifier {
   name : String
-  local_name : String?     // as X (renamed from alias)
+  local_name : String? // as X (renamed from alias)
   is_default : Bool
-  is_star : Bool           // import * as X (renamed from is_namespace)
+  is_star : Bool // import * as X (renamed from is_namespace)
 } derive(Eq, Show)
 
 ///|
@@ -24,7 +27,10 @@ pub fn ImportSpecifier::named(name : String) -> ImportSpecifier {
 
 ///|
 /// Create an aliased import specifier
-pub fn ImportSpecifier::with_local(name : String, renamed : String) -> ImportSpecifier {
+pub fn ImportSpecifier::with_local(
+  name : String,
+  renamed : String,
+) -> ImportSpecifier {
   { name, local_name: Some(renamed), is_default: false, is_star: false }
 }
 
@@ -47,7 +53,7 @@ pub(all) enum ExportKind {
   Let
   Function
   Default
-  Named  // export { x, y }
+  Named // export { x, y }
 } derive(Eq, Show)
 
 // =============================================================================
@@ -57,9 +63,9 @@ pub(all) enum ExportKind {
 ///|
 /// Attribute value type
 pub(all) enum MdxAttrValue {
-  StringValue(String)     // prop="value" or prop='value'
+  StringValue(String) // prop="value" or prop='value'
   ExpressionValue(String) // prop={expression}
-  BooleanValue            // prop (true)
+  BooleanValue // prop (true)
 } derive(Eq, Show)
 
 ///|
@@ -186,7 +192,9 @@ pub fn MdxMetadata::empty() -> MdxMetadata {
 ///|
 /// Check if metadata is empty
 pub fn MdxMetadata::is_empty(self : MdxMetadata) -> Bool {
-  self.imports.is_empty() && self.exports.is_empty() && self.components.is_empty()
+  self.imports.is_empty() &&
+  self.exports.is_empty() &&
+  self.components.is_empty()
 }
 
 // =============================================================================

@@ -57,7 +57,6 @@ pub fn bash_highlighter() -> @lezer.Highlighter {
   h.add_rule("Glob", Operator)
   h.add_rule("Equals", Operator)
   h.add_rule("Number", Number)
-
   h
 }
 
@@ -109,7 +108,6 @@ pub fn highlight_bash(source : String) -> Array[@lezer.HighlightToken] {
   let tokens = tokenizer.tokenize_all()
   let highlighter = bash_highlighter()
   let result : Array[@lezer.HighlightToken] = []
-
   for token in tokens {
     let name = token_type_name(token.token_type)
     let tag = highlighter.get_tag(name)

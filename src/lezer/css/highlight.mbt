@@ -46,7 +46,6 @@ pub fn css_highlighter() -> @lezer.Highlighter {
 
   // Comments
   h.add_rule("Comment", Comment)
-
   h
 }
 
@@ -93,7 +92,6 @@ pub fn highlight_css(source : String) -> Array[@lezer.HighlightToken] {
   let tokens = tokenizer.tokenize_all()
   let highlighter = css_highlighter()
   let result : Array[@lezer.HighlightToken] = []
-
   for token in tokens {
     let name = token_type_name(token.token_type)
     let tag = highlighter.get_tag(name)

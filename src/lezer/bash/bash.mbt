@@ -8,53 +8,53 @@
 /// Bash token types
 pub(all) enum BashTokenType {
   // Keywords
-  Keyword         // if, then, else, fi, for, while, do, done, case, esac, etc.
+  Keyword // if, then, else, fi, for, while, do, done, case, esac, etc.
 
   // Commands and arguments
-  Command         // First word (command name)
-  Argument        // Command arguments
-  Option          // -f, --flag
+  Command // First word (command name)
+  Argument // Command arguments
+  Option // -f, --flag
 
   // Variables
-  Variable        // $VAR, ${VAR}
-  SpecialVar      // $?, $!, $$, $@, $*, $#, $0-$9
+  Variable // $VAR, ${VAR}
+  SpecialVar // $?, $!, $$, $@, $*, $#, $0-$9
 
   // Strings
-  DoubleString    // "..."
-  SingleString    // '...'
-  RawString       // $'...'
-  HereDoc         // <<EOF ... EOF
+  DoubleString // "..."
+  SingleString // '...'
+  RawString // $'...'
+  HereDoc // <<EOF ... EOF
 
   // Operators
-  Pipe            // |
-  PipeAnd         // |&
-  And             // &&
-  Or              // ||
-  Redirect        // >, >>, <, <<, 2>, &>, etc.
-  Background      // &
-  Semicolon       // ;
+  Pipe // |
+  PipeAnd // |&
+  And // &&
+  Or // ||
+  Redirect // >, >>, <, <<, 2>, &>, etc.
+  Background // &
+  Semicolon // ;
   DoubleSemicolon // ;;
 
   // Substitution
-  CommandSub      // $(...)
-  ProcessSub      // <(...) or >(...)
-  ArithmeticExp   // $((...))
+  CommandSub // $(...)
+  ProcessSub // <(...) or >(...)
+  ArithmeticExp // $((...))
 
   // Brackets
-  ParenOpen       // (
-  ParenClose      // )
-  BraceOpen       // {
-  BraceClose      // }
-  BracketOpen     // [
-  BracketClose    // ]
-  DoubleBracket   // [[ or ]]
+  ParenOpen // (
+  ParenClose // )
+  BraceOpen // {
+  BraceClose // }
+  BracketOpen // [
+  BracketClose // ]
+  DoubleBracket // [[ or ]]
 
   // Special
-  Comment         // # ...
-  Shebang         // #!/bin/bash
-  Glob            // *, ?, [...]
-  Equals          // =
-  Number          // 123
+  Comment // # ...
+  Shebang // #!/bin/bash
+  Glob // *, ?, [...]
+  Equals // =
+  Number // 123
 
   // Error
   Error
@@ -76,6 +76,7 @@ pub(all) struct BashToken {
 // Bash Keywords
 // =============================================================================
 
+///|
 fn is_keyword(word : String) -> Bool {
   match word {
     "if" | "then" | "else" | "elif" | "fi" => true
@@ -197,7 +198,6 @@ fn BashTokenizer::read_comment(self : BashTokenizer) -> BashToken {
 fn BashTokenizer::read_double_string(self : BashTokenizer) -> BashToken {
   let start = self.pos
   self.pos += 1 // skip opening "
-
   while self.pos < self.len {
     let c = self.chars[self.pos]
     if c == '"' {
@@ -209,7 +209,6 @@ fn BashTokenizer::read_double_string(self : BashTokenizer) -> BashToken {
       self.pos += 1
     }
   }
-
   { token_type: DoubleString, from: start, to: self.pos }
 }
 
@@ -218,14 +217,12 @@ fn BashTokenizer::read_double_string(self : BashTokenizer) -> BashToken {
 fn BashTokenizer::read_single_string(self : BashTokenizer) -> BashToken {
   let start = self.pos
   self.pos += 1 // skip opening '
-
   while self.pos < self.len && self.chars[self.pos] != '\'' {
     self.pos += 1
   }
   if self.pos < self.len {
     self.pos += 1 // skip closing '
   }
-
   { token_type: SingleString, from: start, to: self.pos }
 }
 
@@ -234,7 +231,6 @@ fn BashTokenizer::read_single_string(self : BashTokenizer) -> BashToken {
 fn BashTokenizer::read_raw_string(self : BashTokenizer) -> BashToken {
   let start = self.pos
   self.pos += 2 // skip $'
-
   while self.pos < self.len {
     let c = self.chars[self.pos]
     if c == '\'' {
@@ -246,7 +242,6 @@ fn BashTokenizer::read_raw_string(self : BashTokenizer) -> BashToken {
       self.pos += 1
     }
   }
-
   { token_type: RawString, from: start, to: self.pos }
 }
 
@@ -255,11 +250,9 @@ fn BashTokenizer::read_raw_string(self : BashTokenizer) -> BashToken {
 fn BashTokenizer::read_variable(self : BashTokenizer) -> BashToken {
   let start = self.pos
   self.pos += 1 // skip $
-
   if self.pos >= self.len {
     return { token_type: Variable, from: start, to: self.pos }
   }
-
   let c = self.chars[self.pos]
 
   // Special variables: $?, $!, $$, $@, $*, $#, $0-$9
@@ -331,7 +324,6 @@ fn BashTokenizer::read_variable(self : BashTokenizer) -> BashToken {
       break
     }
   }
-
   { token_type: Variable, from: start, to: self.pos }
 }
 
@@ -351,13 +343,12 @@ fn BashTokenizer::read_word(self : BashTokenizer) -> BashToken {
     }
     return { token_type: Option, from: start, to: self.pos }
   }
-
   while self.pos < self.len && is_word_char(self.chars[self.pos]) {
     self.pos += 1
   }
 
   // Check if it's a keyword
-  let word = self.input.substring(start~, end=self.pos)
+  let word = String::from_array(self.chars[start:self.pos])
   if is_keyword(word) {
     return { token_type: Keyword, from: start, to: self.pos }
   }
@@ -367,7 +358,6 @@ fn BashTokenizer::read_word(self : BashTokenizer) -> BashToken {
     self.after_command = true
     return { token_type: Command, from: start, to: self.pos }
   }
-
   { token_type: Argument, from: start, to: self.pos }
 }
 
@@ -375,13 +365,11 @@ fn BashTokenizer::read_word(self : BashTokenizer) -> BashToken {
 /// Tokenize the entire input
 pub fn BashTokenizer::tokenize_all(self : BashTokenizer) -> Array[BashToken] {
   let tokens : Array[BashToken] = []
-
   while self.pos < self.len {
     self.skip_whitespace()
     if self.pos >= self.len {
       break
     }
-
     let c = self.chars[self.pos]
 
     // Newline
@@ -585,6 +573,5 @@ pub fn BashTokenizer::tokenize_all(self : BashTokenizer) -> Array[BashToken] {
         }
     }
   }
-
   tokens
 }

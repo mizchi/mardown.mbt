@@ -20,12 +20,18 @@ test "generate_heading_id: special characters" {
 
 ///|
 test "generate_heading_id: japanese" {
-  inspect(generate_heading_id("日本語タイトル"), content="日本語タイトル")
+  inspect(
+    generate_heading_id("日本語タイトル"),
+    content="日本語タイトル",
+  )
 }
 
 ///|
 test "generate_heading_id: mixed" {
-  inspect(generate_heading_id("API リファレンス"), content="api-リファレンス")
+  inspect(
+    generate_heading_id("API リファレンス"),
+    content="api-リファレンス",
+  )
 }
 
 ///|
