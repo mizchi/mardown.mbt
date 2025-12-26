@@ -189,7 +189,7 @@ fn escape_html_to(s : String, buf : StringBuilder) -> Unit {
 
 ///|
 /// Escape HTML from char slice directly to StringBuilder (zero-alloc)
-fn escape_html_slice_to(
+pub fn escape_html_slice_to(
   chars : Array[Char],
   from : Int,
   to : Int,

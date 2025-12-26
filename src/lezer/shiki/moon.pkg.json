@@ -1,0 +1,8 @@
+{
+  "import": [
+    "mizchi/markdown/lezer",
+    "mizchi/markdown/lezer/typescript",
+    "mizchi/markdown/lezer/moonbit",
+    "mizchi/markdown/lezer/json"
+  ]
+}
