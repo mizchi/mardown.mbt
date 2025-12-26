@@ -14,36 +14,43 @@ const IDB_KEY = "current";
 const UI_STATE_KEY = "markdown-editor-ui";
 const DEBOUNCE_DELAY = 300;
 
-const initialMarkdown = `# Hello
+const initialMarkdown = `# markdown.mbt Playground
 
-This is a **bold** and *italic* text.
+A high-performance Markdown parser written in [MoonBit](https://www.moonbitlang.com/), compiled to WebAssembly.
 
 ## Features
 
-- Bullet point 1
-- Bullet point 2
-- Bullet point 3
+- **Blazing Fast**: MoonBit compiles to efficient WASM for near-native performance
+- **Syntax Highlighting**: Integrated code highlighting powered by Lezer
+- **Live Preview**: Real-time Markdown rendering as you type
+- **Auto Save**: Your content is automatically saved to browser storage (IndexedDB)
 
-### Task List
+## Code Example
 
-- [ ] Todo item
-- [x] Completed item
-
-### Code Block
-
-\`\`\`javascript
-const x = 1;
-console.log(x);
+\`\`\`typescript
+// Syntax highlighting works for multiple languages
+function greet(name: string): string {
+  return \`Hello, \${name}!\`;
+}
 \`\`\`
 
-> Blockquote example
+\`\`\`rust
+fn main() {
+    println!("Hello from Rust!");
+}
+\`\`\`
 
-| Name | Age |
-|------|-----|
-| Alice | 30 |
-| Bob | 25 |
+## Markdown Support
 
-Visit [example](https://example.com) for more.
+- **Bold** and *italic* text
+- [Links](https://github.com/mizchi/markdown.mbt)
+- \`inline code\`
+- > Blockquotes
+- Lists and task lists
+
+---
+
+Source: [github.com/mizchi/markdown.mbt](https://github.com/mizchi/markdown.mbt)
 `;
 
 // IndexedDB helpers
