@@ -394,11 +394,9 @@ console.log(greet(user));
         e.preventDefault();
         const start = editor.selectionStart;
         const end = editor.selectionEnd;
-        const value = editor.value;
 
-        // Insert tab (2 spaces)
-        editor.value = value.substring(0, start) + '  ' + value.substring(end);
-        editor.selectionStart = editor.selectionEnd = start + 2;
+        // Use setRangeText for reliable insertion
+        editor.setRangeText('  ', start, end, 'end');
 
         updateHighlight();
         updateLineNumbers();
