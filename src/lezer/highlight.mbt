@@ -169,57 +169,79 @@ pub fn Highlighter::highlight(
 /// Escape HTML special characters
 pub fn escape_html(s : String) -> String {
   let result = StringBuilder::new()
-  for c in s {
-    match c {
-      '<' => result.write_string("&lt;")
-      '>' => result.write_string("&gt;")
-      '&' => result.write_string("&amp;")
-      '"' => result.write_string("&quot;")
-      _ => result.write_char(c)
-    }
-  }
+  escape_html_to(s, result)
   result.to_string()
 }
 
 ///|
+/// Escape HTML special characters directly to StringBuilder (zero-alloc)
+fn escape_html_to(s : String, buf : StringBuilder) -> Unit {
+  for c in s {
+    match c {
+      '<' => buf.write_string("&lt;")
+      '>' => buf.write_string("&gt;")
+      '&' => buf.write_string("&amp;")
+      '"' => buf.write_string("&quot;")
+      _ => buf.write_char(c)
+    }
+  }
+}
+
+///|
+/// Escape HTML from char slice directly to StringBuilder (zero-alloc)
+fn escape_html_slice_to(
+  chars : Array[Char],
+  from : Int,
+  to : Int,
+  buf : StringBuilder
+) -> Unit {
+  for i = from; i < to; i = i + 1 {
+    match chars[i] {
+      '<' => buf.write_string("&lt;")
+      '>' => buf.write_string("&gt;")
+      '&' => buf.write_string("&amp;")
+      '"' => buf.write_string("&quot;")
+      c => buf.write_char(c)
+    }
+  }
+}
+
+///|
 /// Generate highlighted HTML from source and tokens
+/// Note: tokens are assumed to be already sorted by position (as produced by tokenizers)
 pub fn tokens_to_html(
   source : String,
   tokens : Array[HighlightToken]
 ) -> String {
   let result = StringBuilder::new()
   let chars = source.to_array()
+  let len = chars.length()
   let mut pos = 0
 
-  // Sort tokens by position (should already be sorted, but ensure)
-  let sorted_tokens = tokens.copy()
-  sorted_tokens.sort_by(fn(a, b) { a.from - b.from })
-  for token in sorted_tokens {
+  // Tokens are already sorted by position from tokenizers, no need to copy/sort
+  for token in tokens {
     // Add unhighlighted text before this token
     if token.from > pos {
-      let text = chars[pos:token.from].iter().collect()
-      result.write_string(escape_html(String::from_array(text)))
+      escape_html_slice_to(chars, pos, token.from, result)
     }
 
     // Add highlighted token
-    let text = chars[token.from:token.to].iter().collect()
     let class_name = token.tag.to_class()
     if class_name != "" {
       result.write_string("<span class=\"")
       result.write_string(class_name)
       result.write_string("\">")
-      result.write_string(escape_html(String::from_array(text)))
+      escape_html_slice_to(chars, token.from, token.to, result)
       result.write_string("</span>")
     } else {
-      result.write_string(escape_html(String::from_array(text)))
+      escape_html_slice_to(chars, token.from, token.to, result)
     }
     pos = token.to
   }
 
   // Add remaining text
-  if pos < chars.length() {
-    let text = chars[pos:].iter().collect()
-    result.write_string(escape_html(String::from_array(text)))
+  if pos < len {
+    escape_html_slice_to(chars, pos, len, result)
   }
   result.to_string()
 }
