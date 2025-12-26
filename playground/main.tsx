@@ -3,13 +3,16 @@ import { useState, useCallback, useEffect, useRef } from "preact/hooks";
 import { parse } from "../js/api.js";
 import type { Root } from "mdast";
 import { MarkdownRenderer } from "./ast-renderer";
-import { SyntaxHighlightEditor } from "./SyntaxHighlightEditor";
+import { SyntaxHighlightEditor, type SyntaxHighlightEditorHandle } from "./SyntaxHighlightEditor";
 
-const STORAGE_KEY = "markdown-editor-content";
+// IndexedDB for content (reliable async storage)
 const IDB_NAME = "markdown-editor";
 const IDB_STORE = "documents";
 const IDB_KEY = "current";
-const DEBOUNCE_DELAY = 1000;
+
+// localStorage for UI state (sync access for initial render)
+const UI_STATE_KEY = "markdown-editor-ui";
+const DEBOUNCE_DELAY = 500;
 
 const initialMarkdown = `# Hello
 
@@ -58,14 +61,15 @@ function openDB(): Promise<IDBDatabase> {
   });
 }
 
-async function saveToIDB(content: string): Promise<void> {
+async function saveToIDB(content: string): Promise<number> {
   const db = await openDB();
+  const timestamp = Date.now();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(IDB_STORE, "readwrite");
     const store = tx.objectStore(IDB_STORE);
-    const request = store.put({ content, timestamp: Date.now() }, IDB_KEY);
+    const request = store.put({ content, timestamp }, IDB_KEY);
     request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve();
+    request.onsuccess = () => resolve(timestamp);
     tx.oncomplete = () => db.close();
   });
 }
@@ -83,6 +87,38 @@ async function loadFromIDB(): Promise<{ content: string; timestamp: number } | n
     });
   } catch {
     return null;
+  }
+}
+
+// UI State helpers (localStorage for sync access)
+interface UIState {
+  viewMode: "split" | "editor" | "preview";
+  cursorPosition: number;
+}
+
+function loadUIState(): UIState {
+  try {
+    const saved = localStorage.getItem(UI_STATE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return {
+        viewMode: parsed.viewMode || "split",
+        cursorPosition: parsed.cursorPosition || 0,
+      };
+    }
+  } catch {
+    // ignore parse errors
+  }
+  return { viewMode: "split", cursorPosition: 0 };
+}
+
+function saveUIState(state: Partial<UIState>): void {
+  try {
+    const current = loadUIState();
+    const updated = { ...current, ...state };
+    localStorage.setItem(UI_STATE_KEY, JSON.stringify(updated));
+  } catch {
+    // ignore storage errors
   }
 }
 
@@ -164,16 +200,30 @@ const PreviewIcon = () => (
 );
 
 function App() {
-  const [source, setSource] = useState(initialMarkdown);
-  const [ast, setAst] = useState<Root>(() => parse(initialMarkdown));
-  const [cursorPosition, setCursorPosition] = useState(0);
+  // Load UI state synchronously for initial render
+  const initialUIState = loadUIState();
+
+  const [source, setSource] = useState("");
+  const [ast, setAst] = useState<Root | null>(null);
+  const [cursorPosition, setCursorPosition] = useState(initialUIState.cursorPosition);
   const [isInitialized, setIsInitialized] = useState(false);
+  const editorRef = useRef<SyntaxHighlightEditorHandle>(null);
   const [isDark, toggleDark] = useDarkMode();
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "idle">("idle");
-  const [viewMode, setViewMode] = useState<ViewMode>("split");
+  const [viewMode, setViewMode] = useState<ViewMode>(initialUIState.viewMode);
+
+  // Track if content has been modified since load (to avoid saving on initial load)
+  const hasModified = useRef(false);
+  // Track last synced timestamp for tab sync
+  const lastSyncedTimestamp = useRef(0);
 
   const previewRef = useRef<HTMLDivElement>(null);
   const debouncedSource = useDebounce(source, DEBOUNCE_DELAY);
+
+  const handleViewModeChange = useCallback((mode: ViewMode) => {
+    setViewMode(mode);
+    saveUIState({ viewMode: mode });
+  }, []);
 
   // Keyboard shortcuts for view mode
   useEffect(() => {
@@ -181,45 +231,45 @@ function App() {
       if (e.ctrlKey || e.metaKey) {
         if (e.key === "1") {
           e.preventDefault();
-          setViewMode("split");
+          handleViewModeChange("split");
         } else if (e.key === "2") {
           e.preventDefault();
-          setViewMode("editor");
+          handleViewModeChange("editor");
         } else if (e.key === "3") {
           e.preventDefault();
-          setViewMode("preview");
+          handleViewModeChange("preview");
         }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [handleViewModeChange]);
 
-  // Load initial content from localStorage or IndexedDB
+  // Load initial content from IndexedDB, fallback to default for first visit
   useEffect(() => {
     async function loadInitialContent() {
-      // First, try localStorage for quick load
-      const localContent = localStorage.getItem(STORAGE_KEY);
+      let content = initialMarkdown;
+      let timestamp = 0;
 
-      // Then check IndexedDB for potentially newer content
-      const idbData = await loadFromIDB();
-
-      if (idbData && idbData.content) {
-        // Compare timestamps if both exist
-        const localTimestamp = parseInt(localStorage.getItem(`${STORAGE_KEY}-timestamp`) || "0", 10);
-        if (idbData.timestamp >= localTimestamp) {
-          setSource(idbData.content);
-          setAst(parse(idbData.content));
-        } else if (localContent) {
-          setSource(localContent);
-          setAst(parse(localContent));
+      try {
+        const idbData = await loadFromIDB();
+        if (idbData && idbData.content) {
+          content = idbData.content;
+          timestamp = idbData.timestamp;
         }
-      } else if (localContent) {
-        setSource(localContent);
-        setAst(parse(localContent));
+      } catch (e) {
+        console.error("Failed to load from IndexedDB:", e);
       }
 
+      setSource(content);
+      setAst(parse(content));
+      lastSyncedTimestamp.current = timestamp;
       setIsInitialized(true);
+
+      // Focus editor after initialization
+      requestAnimationFrame(() => {
+        editorRef.current?.focus();
+      });
     }
 
     loadInitialContent();
@@ -228,44 +278,50 @@ function App() {
   // Handle visibility change for tab sync
   useEffect(() => {
     async function handleVisibilityChange() {
-      if (document.visibilityState === "visible") {
+      if (document.visibilityState !== "visible") return;
+      if (!isInitialized) return;
+
+      try {
         const idbData = await loadFromIDB();
-        if (idbData) {
-          const currentTimestamp = parseInt(localStorage.getItem(`${STORAGE_KEY}-timestamp`) || "0", 10);
-          // If IDB has newer content, update
-          if (idbData.timestamp > currentTimestamp) {
-            setSource(idbData.content);
-            setAst(parse(idbData.content));
-            localStorage.setItem(STORAGE_KEY, idbData.content);
-            localStorage.setItem(`${STORAGE_KEY}-timestamp`, idbData.timestamp.toString());
-          }
+        if (!idbData) return;
+
+        // If IDB has newer content from another tab, sync it
+        if (idbData.timestamp > lastSyncedTimestamp.current) {
+          setSource(idbData.content);
+          setAst(parse(idbData.content));
+          lastSyncedTimestamp.current = idbData.timestamp;
+          hasModified.current = false; // Reset since we just synced
         }
+      } catch (e) {
+        console.error("Failed to sync from IndexedDB:", e);
       }
     }
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, []);
+  }, [isInitialized]);
 
-  // Save to localStorage with debounce
+  // Save content to IndexedDB with debounce
   useEffect(() => {
     if (!isInitialized) return;
+    if (!hasModified.current) return; // Don't save on initial load
 
     setSaveStatus("saving");
-    const timestamp = Date.now();
-    localStorage.setItem(STORAGE_KEY, debouncedSource);
-    localStorage.setItem(`${STORAGE_KEY}-timestamp`, timestamp.toString());
-
-    // Also save to IndexedDB
-    saveToIDB(debouncedSource).then(() => {
-      setSaveStatus("saved");
-      setTimeout(() => setSaveStatus("idle"), 1000);
-    });
+    saveToIDB(debouncedSource)
+      .then((timestamp) => {
+        lastSyncedTimestamp.current = timestamp;
+        setSaveStatus("saved");
+        setTimeout(() => setSaveStatus("idle"), 1000);
+      })
+      .catch((e) => {
+        console.error("Failed to save to IndexedDB:", e);
+        setSaveStatus("idle");
+      });
   }, [debouncedSource, isInitialized]);
 
   // Sync preview scroll with cursor position
   useEffect(() => {
-    if (!previewRef.current) return;
+    if (!previewRef.current || !ast) return;
 
     const blockIndex = findBlockAtPosition(ast, cursorPosition);
     if (blockIndex === null) return;
@@ -282,13 +338,20 @@ function App() {
   }, [cursorPosition, ast]);
 
   const handleChange = useCallback((newSource: string) => {
+    hasModified.current = true;
     setSource(newSource);
     setAst(parse(newSource));
   }, []);
 
   const handleCursorChange = useCallback((position: number) => {
     setCursorPosition(position);
+    saveUIState({ cursorPosition: position });
   }, []);
+
+  // Don't render until initialized to prevent flash of default content
+  if (!isInitialized || ast === null) {
+    return null;
+  }
 
   return (
     <div class="app-container">
@@ -296,21 +359,21 @@ function App() {
         <div class="view-mode-buttons">
           <button
             class={`view-mode-btn ${viewMode === "split" ? "active" : ""}`}
-            onClick={() => setViewMode("split")}
+            onClick={() => handleViewModeChange("split")}
             title="Split view (Ctrl+1)"
           >
             <SplitIcon />
           </button>
           <button
             class={`view-mode-btn ${viewMode === "editor" ? "active" : ""}`}
-            onClick={() => setViewMode("editor")}
+            onClick={() => handleViewModeChange("editor")}
             title="Editor only (Ctrl+2)"
           >
             <EditorIcon />
           </button>
           <button
             class={`view-mode-btn ${viewMode === "preview" ? "active" : ""}`}
-            onClick={() => setViewMode("preview")}
+            onClick={() => handleViewModeChange("preview")}
             title="Preview only (Ctrl+3)"
           >
             <PreviewIcon />
@@ -341,9 +404,11 @@ function App() {
         {(viewMode === "split" || viewMode === "editor") && (
           <div class="editor">
             <SyntaxHighlightEditor
+              ref={editorRef}
               value={source}
               onChange={handleChange}
               onCursorChange={handleCursorChange}
+              initialCursorPosition={initialUIState.cursorPosition}
             />
           </div>
         )}

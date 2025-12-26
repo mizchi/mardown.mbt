@@ -1,4 +1,5 @@
-import { useRef, useEffect, useCallback, useState } from "preact/hooks";
+import { useRef, useEffect, useCallback, useState, useImperativeHandle } from "preact/hooks";
+import { forwardRef } from "preact/compat";
 // @ts-ignore - no type declarations for lezer_api.js
 import { highlight } from "../js/lezer_api.js";
 
@@ -6,6 +7,7 @@ interface SyntaxHighlightEditorProps {
   value: string;
   onChange: (value: string) => void;
   onCursorChange?: (position: number) => void;
+  initialCursorPosition?: number;
 }
 
 // Language alias mapping
@@ -40,6 +42,7 @@ function highlightMarkdown(source: string): string {
   let codeBlockLang = "";
   let codeBlockFenceLen = 0;
   let codeBlockContent: string[] = [];
+  let codeBlockStartLine = -1;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]!;
@@ -53,26 +56,25 @@ function highlightMarkdown(source: string): string {
       codeBlockFenceLen = fenceMatch[1]!.length;
       codeBlockLang = (fenceMatch[2] || "").toLowerCase();
       codeBlockContent = [];
+      codeBlockStartLine = i;
       result.push(highlightFenceLine(line, fenceMatch[1]!, fenceMatch[2] || ""));
     } else if (inCodeBlock) {
       // Check for end of code block
       const endFenceMatch = line.match(/^(`{3,})\s*$/);
       if (endFenceMatch && endFenceMatch[1]!.length >= codeBlockFenceLen) {
-        // End of code block - highlight accumulated content
+        // End of code block - highlight and add all content lines
         const highlightedLines = highlightCodeBlockLines(codeBlockContent, codeBlockLang);
-        // Replace placeholder lines with highlighted content
-        const startIdx = result.length - codeBlockContent.length;
-        for (let j = 0; j < highlightedLines.length; j++) {
-          result[startIdx + j] = highlightedLines[j]!;
+        // Ensure we have the same number of lines
+        for (let j = 0; j < codeBlockContent.length; j++) {
+          result.push(highlightedLines[j] ?? escapeHtml(codeBlockContent[j]!));
         }
         result.push(`<span class="md-fence">${escapeHtml(line)}</span>`);
         inCodeBlock = false;
         codeBlockLang = "";
         codeBlockContent = [];
       } else {
-        // Inside code block - add to both result (as placeholder) and accumulator
+        // Inside code block - accumulate
         codeBlockContent.push(line);
-        result.push(escapeHtml(line)); // Placeholder, will be replaced when block closes
       }
     } else {
       // Regular markdown line
@@ -80,7 +82,7 @@ function highlightMarkdown(source: string): string {
     }
   }
 
-  // Handle unclosed code block
+  // Handle unclosed code block - add accumulated lines as escaped text
   if (inCodeBlock) {
     for (const line of codeBlockContent) {
       result.push(escapeHtml(line));
@@ -285,15 +287,25 @@ function highlightInline(text: string): string {
   return result;
 }
 
-export function SyntaxHighlightEditor({ value, onChange, onCursorChange }: SyntaxHighlightEditorProps) {
+export interface SyntaxHighlightEditorHandle {
+  focus: () => void;
+}
+
+export const SyntaxHighlightEditor = forwardRef<SyntaxHighlightEditorHandle, SyntaxHighlightEditorProps>(
+  function SyntaxHighlightEditor({ value, onChange, onCursorChange, initialCursorPosition }, ref) {
   const editorRef = useRef<HTMLTextAreaElement>(null);
   const highlightRef = useRef<HTMLDivElement>(null);
   const lineNumbersRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const [isComposing, setIsComposing] = useState(false);
+  const isComposingRef = useRef(false);
+  const initializedRef = useRef(false);
+
+  useImperativeHandle(ref, () => ({
+    focus: () => editorRef.current?.focus(),
+  }));
 
   const updateHighlight = useCallback(() => {
-    if (isComposing || !highlightRef.current) return;
+    if (isComposingRef.current || !highlightRef.current) return;
 
     try {
       const html = highlightMarkdown(value);
@@ -302,7 +314,7 @@ export function SyntaxHighlightEditor({ value, onChange, onCursorChange }: Synta
       console.error("Highlight error:", e);
       highlightRef.current.innerHTML = escapeHtml(value);
     }
-  }, [value, isComposing]);
+  }, [value]);
 
   const updateLineNumbers = useCallback(() => {
     if (!lineNumbersRef.current) return;
@@ -326,15 +338,25 @@ export function SyntaxHighlightEditor({ value, onChange, onCursorChange }: Synta
     updateLineNumbers();
   }, [updateHighlight, updateLineNumbers]);
 
+  // Restore initial cursor position once
+  useEffect(() => {
+    if (!initializedRef.current && editorRef.current && initialCursorPosition != null && initialCursorPosition > 0) {
+      const pos = Math.min(initialCursorPosition, value.length);
+      editorRef.current.setSelectionRange(pos, pos);
+      editorRef.current.focus();
+      initializedRef.current = true;
+    }
+  }, [initialCursorPosition, value.length]);
+
   const handleInput = useCallback(
     (e: Event) => {
       const target = e.target as HTMLTextAreaElement;
-      if (!isComposing) {
+      if (!isComposingRef.current) {
         onChange(target.value);
       }
       onCursorChange?.(target.selectionStart);
     },
-    [onChange, onCursorChange, isComposing]
+    [onChange, onCursorChange]
   );
 
   const handleKeyDown = useCallback(
@@ -352,12 +374,12 @@ export function SyntaxHighlightEditor({ value, onChange, onCursorChange }: Synta
   );
 
   const handleCompositionStart = useCallback(() => {
-    setIsComposing(true);
+    isComposingRef.current = true;
     wrapperRef.current?.classList.add("composing");
   }, []);
 
   const handleCompositionEnd = useCallback(() => {
-    setIsComposing(false);
+    isComposingRef.current = false;
     wrapperRef.current?.classList.remove("composing");
     if (editorRef.current) {
       onChange(editorRef.current.value);
@@ -396,4 +418,4 @@ export function SyntaxHighlightEditor({ value, onChange, onCursorChange }: Synta
       </div>
     </div>
   );
-}
+});
