@@ -93,6 +93,7 @@ async function loadFromIDB(): Promise<{ content: string; timestamp: number } | n
 // UI State helpers (localStorage for sync access)
 interface UIState {
   viewMode: "split" | "editor" | "preview";
+  editorMode: "highlight" | "simple";
   cursorPosition: number;
 }
 
@@ -103,13 +104,14 @@ function loadUIState(): UIState {
       const parsed = JSON.parse(saved);
       return {
         viewMode: parsed.viewMode || "split",
+        editorMode: parsed.editorMode || "highlight",
         cursorPosition: parsed.cursorPosition || 0,
       };
     }
   } catch {
     // ignore parse errors
   }
-  return { viewMode: "split", cursorPosition: 0 };
+  return { viewMode: "split", editorMode: "highlight", cursorPosition: 0 };
 }
 
 function saveUIState(state: Partial<UIState>): void {
@@ -173,6 +175,7 @@ function findBlockAtPosition(ast: Root, position: number): number | null {
 }
 
 type ViewMode = "split" | "editor" | "preview";
+type EditorMode = "highlight" | "simple";
 
 // SVG Icons for view modes
 const SplitIcon = () => (
@@ -199,6 +202,26 @@ const PreviewIcon = () => (
   </svg>
 );
 
+// Syntax highlight editor icon (colorful brackets)
+const HighlightIcon = () => (
+  <svg viewBox="0 0 20 20" width="18" height="18" fill="none">
+    <text x="2" y="14" fontSize="12" fill="#d73a49" fontFamily="monospace" fontWeight="bold">&lt;</text>
+    <text x="8" y="14" fontSize="12" fill="#22863a" fontFamily="monospace">/</text>
+    <text x="12" y="14" fontSize="12" fill="#0366d6" fontFamily="monospace" fontWeight="bold">&gt;</text>
+  </svg>
+);
+
+// Simple textarea icon (plain text)
+const SimpleIcon = () => (
+  <svg viewBox="0 0 20 20" width="18" height="18" fill="currentColor">
+    <rect x="2" y="2" width="16" height="16" rx="1" stroke="currentColor" strokeWidth="1.5" fill="none" />
+    <line x1="5" y1="6" x2="15" y2="6" stroke="currentColor" strokeWidth="1" opacity="0.5" />
+    <line x1="5" y1="9" x2="13" y2="9" stroke="currentColor" strokeWidth="1" opacity="0.5" />
+    <line x1="5" y1="12" x2="14" y2="12" stroke="currentColor" strokeWidth="1" opacity="0.5" />
+    <line x1="5" y1="15" x2="10" y2="15" stroke="currentColor" strokeWidth="1" opacity="0.5" />
+  </svg>
+);
+
 function App() {
   // Load UI state synchronously for initial render
   const initialUIState = loadUIState();
@@ -211,6 +234,8 @@ function App() {
   const [isDark, toggleDark] = useDarkMode();
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "idle">("idle");
   const [viewMode, setViewMode] = useState<ViewMode>(initialUIState.viewMode);
+  const [editorMode, setEditorMode] = useState<EditorMode>(initialUIState.editorMode);
+  const simpleEditorRef = useRef<HTMLTextAreaElement>(null);
 
   // Track if content has been modified since load (to avoid saving on initial load)
   const hasModified = useRef(false);
@@ -225,6 +250,11 @@ function App() {
   const handleViewModeChange = useCallback((mode: ViewMode) => {
     setViewMode(mode);
     saveUIState({ viewMode: mode });
+  }, []);
+
+  const handleEditorModeChange = useCallback((mode: EditorMode) => {
+    setEditorMode(mode);
+    saveUIState({ editorMode: mode });
   }, []);
 
   // Keyboard shortcuts for view mode
@@ -363,34 +393,52 @@ function App() {
   return (
     <div class="app-container">
       <header class="toolbar">
-        <div class="view-mode-buttons">
-          <button
-            class={`view-mode-btn ${viewMode === "split" ? "active" : ""}`}
-            onClick={() => handleViewModeChange("split")}
-            title="Split view (Ctrl+1)"
-          >
-            <SplitIcon />
-          </button>
-          <button
-            class={`view-mode-btn ${viewMode === "editor" ? "active" : ""}`}
-            onClick={() => handleViewModeChange("editor")}
-            title="Editor only (Ctrl+2)"
-          >
-            <EditorIcon />
-          </button>
-          <button
-            class={`view-mode-btn ${viewMode === "preview" ? "active" : ""}`}
-            onClick={() => handleViewModeChange("preview")}
-            title="Preview only (Ctrl+3)"
-          >
-            <PreviewIcon />
-          </button>
-        </div>
-        <div class="toolbar-actions">
+        <div class="toolbar-left">
+          <div class="view-mode-buttons">
+            <button
+              class={`view-mode-btn ${viewMode === "split" ? "active" : ""}`}
+              onClick={() => handleViewModeChange("split")}
+              title="Split view (Ctrl+1)"
+            >
+              <SplitIcon />
+            </button>
+            <button
+              class={`view-mode-btn ${viewMode === "editor" ? "active" : ""}`}
+              onClick={() => handleViewModeChange("editor")}
+              title="Editor only (Ctrl+2)"
+            >
+              <EditorIcon />
+            </button>
+            <button
+              class={`view-mode-btn ${viewMode === "preview" ? "active" : ""}`}
+              onClick={() => handleViewModeChange("preview")}
+              title="Preview only (Ctrl+3)"
+            >
+              <PreviewIcon />
+            </button>
+          </div>
+          <div class="editor-mode-buttons">
+            <button
+              class={`view-mode-btn ${editorMode === "highlight" ? "active" : ""}`}
+              onClick={() => handleEditorModeChange("highlight")}
+              title="Syntax highlight editor"
+            >
+              <HighlightIcon />
+            </button>
+            <button
+              class={`view-mode-btn ${editorMode === "simple" ? "active" : ""}`}
+              onClick={() => handleEditorModeChange("simple")}
+              title="Simple text editor"
+            >
+              <SimpleIcon />
+            </button>
+          </div>
           <span class={`save-status ${saveStatus}`}>
             {saveStatus === "saving" && "Saving..."}
             {saveStatus === "saved" && "Saved"}
           </span>
+        </div>
+        <div class="toolbar-actions">
           <button onClick={toggleDark} class="theme-toggle" title="Toggle dark mode">
             {isDark ? "☀️" : "🌙"}
           </button>
@@ -410,13 +458,23 @@ function App() {
       <div class={`container view-${viewMode}`}>
         {(viewMode === "split" || viewMode === "editor") && (
           <div class="editor">
-            <SyntaxHighlightEditor
-              ref={editorRef}
-              value={source}
-              onChange={handleChange}
-              onCursorChange={handleCursorChange}
-              initialCursorPosition={initialUIState.cursorPosition}
-            />
+            {editorMode === "highlight" ? (
+              <SyntaxHighlightEditor
+                ref={editorRef}
+                value={source}
+                onChange={handleChange}
+                onCursorChange={handleCursorChange}
+                initialCursorPosition={initialUIState.cursorPosition}
+              />
+            ) : (
+              <textarea
+                ref={simpleEditorRef}
+                class="simple-editor"
+                value={source}
+                onInput={(e) => handleChange((e.target as HTMLTextAreaElement).value)}
+                spellcheck={false}
+              />
+            )}
           </div>
         )}
         {(viewMode === "split" || viewMode === "preview") && (
